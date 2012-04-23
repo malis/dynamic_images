@@ -1,4 +1,4 @@
-dynamic_images
+Dynamic Images
 ==============
 
 Ruby library providing image rendering described by dynamic templates
