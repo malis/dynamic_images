@@ -1,4 +1,3 @@
-Dynamic Images
-==============
+= Dynamic Images (not usable - in development now)
 
 Ruby library providing image rendering described by dynamic templates
