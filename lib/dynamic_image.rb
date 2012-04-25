@@ -1,3 +1,4 @@
+#============================ example from presentation
 if false
 	DynamicImage.new :width => 520, :endless_height => 505, :background => :transparent do
 	  table :margin => [0, 15] do
@@ -40,6 +41,7 @@ class DynamicImage < DynamicImageElements::BlockElement
 	attr_reader :surface, :context, :is_dynamically_sized
 
 	def initialize(options = {}, &block)
+		treat_options options
 		@options = options
 		if options[:width] && options[:height]
 			@surface = Cairo::ImageSurface.new options[:width], options[:height]
