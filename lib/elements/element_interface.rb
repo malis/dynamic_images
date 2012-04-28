@@ -10,14 +10,13 @@ module DynamicImageElements
     def draw!(x, y) #:nodoc:
       raise Exception.new("not implemented")
     end
-    def surface #:nodoc:
+    # Gets original surface if width and height was given in options or it's created from existing source.
+    def surface
       @parent.surface
     end
-    def context #:nodoc:
+    # Gets original ontext of surface if width and height was given in options or it's created from existing source.
+    def context
       @parent.context
-    end
-    def is_dynamically_sized #:nodoc:
-      @parent.is_dynamically_sized
     end
 
     # Gives array that contains real size of element.
@@ -42,6 +41,17 @@ module DynamicImageElements
     end
 
     private
+    # Processes a given block. Yields objects if the block expects any arguments.
+    # Otherwise evaluates the block in the context of first object.
+    def process(*objects, &block)
+      if block.arity > 0
+        yield *objects
+      else
+        objects.first.instance_eval &block
+      end
+    end
+
+    # Parse common options from @options Hash by metakey
     def use_options(metakey)
       if metakey == :margin || metakey == :padding
         value = [@options["#{metakey}_top".to_sym].to_i, @options["#{metakey}_right".to_sym].to_i, @options["#{metakey}_bottom".to_sym].to_i, @options["#{metakey}_left".to_sym].to_i]
@@ -54,6 +64,7 @@ module DynamicImageElements
       end
     end
 
+    # Calculates real position for drawing element by adding margin and x, y if positioning is relative.
     def recalculate_positions_for_draw(x, y)
       if @margin
         x += @margin[3]
@@ -70,10 +81,12 @@ module DynamicImageElements
     # * :w to specify :width
     # * :h to specify :height
     # * :bg to specify :background
-    OPTIONS_ALIASES = {:w => :width, :h => :height, :bg => :background}
+    # * :valign to specify :vertical_align
+    OPTIONS_ALIASES = {:w => :width, :h => :height, :bg => :background, :valign => :vertical_align}
 
+    # Treats options Hash
     def treat_options(options)
-      #convert all to symbols
+      #convert all keys to symbols
       options.keys.each do |key|
         next if key.class == Symbol
         options[key.to_s.gsub("-", "_").downcase.to_sym] = options[key]

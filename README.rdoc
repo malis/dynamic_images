@@ -1,3 +1,5 @@
 = Dynamic Images (not usable - in development now)
 
 Ruby library providing image rendering described by dynamic templates
+
+:include:../README_USAGE.rdoc

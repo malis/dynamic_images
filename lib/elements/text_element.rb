@@ -5,7 +5,7 @@ module DynamicImageElements
   class TextElement
     include ElementInterface
 
-    # Text element accepts content as text and options Hash. Block can be given and class provides original Pango::Layout object to modify it.
+    # Text element accepts content as text and options +Hash+. Block can be given and class provides original Pango::Layout object to modify it.
     #
     # === Options
     # Options can contain general attributes specified by BlockElement if it's created by it.
@@ -62,7 +62,7 @@ module DynamicImageElements
     #   * <tt>:to_fit => [:crop, 2, :resize, 8, :crop, :letters]</tt> will crop text down to 2 words, if it's not enought to fit it will resize font down, but only to 8 pt and if it's still not enought it will continue with cropping text by letters
     #
     # [:width]
-    #   Sets the width to which the lines should be wrapped.
+    #   Sets the width to which the lines should be wrapped. If it's not given element fits to parent element.
     #
     def initialize(content, options, parent, &block) # :yields: pango_layout
       @content = content
@@ -145,7 +145,7 @@ module DynamicImageElements
           end
         end
       end
-      @block.call pango_layout if @block
+      process pango_layout, &@block if @block
       pango_layout
     end
 

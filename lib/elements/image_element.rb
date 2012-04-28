@@ -1,9 +1,24 @@
 require File.dirname(__FILE__) + '/element_interface.rb'
 
 module DynamicImageElements
+  # Element providing rendering of image.
   class ImageElement
     include ElementInterface
 
+    # Image element accepts source as path to image file and options +Hash+.
+    #
+    # === Options
+    # Options can contain general attributes specified by BlockElement if it's created by it.
+    #
+    # [:crop]
+    #   TODO
+    # [:height]
+    #   Sets height of image.
+    # [:width]
+    #   Sets width of image.
+    # [:zoom]
+    #   TODO
+    #
     def initialize(source, options, parent)
       @source = source
       @options = options

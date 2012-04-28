@@ -1,6 +1,6 @@
 #============================ example from presentation
 if false
-  DynamicImage.new :width => 520, :endless_height => 505, :background => :transparent do
+  DynamicImage.new :width => 520, :height => 505 do
     table :margin => [0, 15] do
       instructions_data.each do |instruction|
         row :border_bottom => [1, :silver] do
@@ -10,7 +10,7 @@ if false
         end
       end
     end
-    save "instructions-%{page}.png", :format => :png
+    save_endless! { |page| "instructions-#{page}.png" }
   end
 end
 #=============================== start file
@@ -37,19 +37,30 @@ module DynamicImageHelpers
   end
 end
 
+# DynamicImage provides interface to create an image in ruby code.
+#
+# :include:../README_USAGE.rdoc
 class DynamicImage < DynamicImageElements::BlockElement
-  attr_reader :surface, :context, :is_dynamically_sized
+  # Gets original surface if width and height was given in options or it's created from existing source.
+  attr_reader :surface
+  # Gets original context of surface if width and height was given in options or it's created from existing source.
+  attr_reader :context
 
+  # DynamicImage accepts options +Hash+. If block is given destroy method is called automatically after a block. Otherwise you have to call destroy manually.
+  #
+  # === Options
+  # Image accepts also all options like BlockElement. See it first.
+  #
+  # [:format]
+  #   TODO
+  #
   def initialize(options = {}, &block) # :yields: block_element
     treat_options options
     @options = options
     if options[:width] && options[:height]
-      #TODO options[:format]
-      @surface = Cairo::ImageSurface.new options[:width], options[:height]
+      w, h = recalculate_positions_for_draw options[:width].to_i, options[:height].to_i
+      @surface = Cairo::ImageSurface.new w+@padding[1]+@padding[3], h+@padding[0]+@padding[2]
       @context = Cairo::Context.new surface
-      @is_dynamically_sized = false
-    else
-      @is_dynamically_sized = true
     end
     context.set_antialias({:default => Cairo::ANTIALIAS_DEFAULT,
                            :gray => Cairo::ANTIALIAS_GRAY,
@@ -62,6 +73,7 @@ class DynamicImage < DynamicImageElements::BlockElement
     end
   end
 
+  # Creates new DynamicImage from given source if it's supported. Use it same way as DynamicImage.new method.
   def self.from(source, options = {}, &block) # :yields: block_element
     object = DynamicImage.new options
     #object. .... TODO load source
@@ -72,7 +84,8 @@ class DynamicImage < DynamicImageElements::BlockElement
     object
   end
 
-  def save!(filename)
+  # Saves image into file or given IO object.
+  def save!(file)
     unless surface
       canvas_size = final_size
       canvas_size[0] = @options[:width] if @options[:width]
@@ -81,16 +94,25 @@ class DynamicImage < DynamicImageElements::BlockElement
       @context = Cairo::Context.new surface
     end
     draw!
-    surface.write_to_png filename
+    surface.write_to_png file
   end
 
-  def save_endless!(maximum, &block) # :yields: index
+  # Saves image content into more images if content is bigger than given image size.
+  # Image is cutted between elements in first level of elements hierarchy. In case of table it's cutted betwwen rows of table.
+  # You can force duplicating elements by passing :TODO option to element. Duplicating of element is started by first rendering of it.
+  #
+  # Method accepts limit of pages to be rendered. If no number is given or 0 is passed it's not limited.
+  # Give a block returning filename of IO object to saving in it. Block provides index of page which is currently rendered. Index starting at 0.
+  def save_endless!(limit = 0, &block) # :yields: index
     #if both sizes are given
     #save_endless 4 do |index|
     #  "image-#{index}.png"
     #end
   end
 
+  # Destroys source objects to free a memory. It's important to call this method when it's finished to avoid a memory leaks.
+  #
+  # If you passed a block to DynamicImage.new or DynamicImage.from it's called automatically after block is finished.
   def destroy
     surface.destroy if surface
     context.destroy if context

@@ -1,0 +1,26 @@
+= Usage of Library
+
+== In general about options
+Options should be in base given as hash. Format of keys in hash is not fixed. You can use +Symbol+s as good as +String+s. There is also no difference between "-" and "_" chars.
+
+If option accepts more arguments you can specify they in +Array+ and also in +String+. In case you choose +String+ it's necessary to seperate arguments by space char.
+
+=== Example
+These +Hash+es are considered as absoluttely same.
+* <tt>{:vertical_align => :middle}</tt>, <tt>{'vertical_align' => 'middle'}</tt>, <tt>{"vertical-align" => :middle}</tt>, <tt>{:vertical_align => "middle"}</tt>, <tt>{:vertical_align => :middle}</tt>, etc.
+* <tt>{:to_fit => [:crop, :sentences, 3, :resize]}</tt>, <tt>{:to_fit => "crop sentences 3 resize"}</tt>, <tt>{'to-fit' => "crop sentences 3 resize"}</tt>, etc.
+
+== Passing Blocks
+In block you can accept object to call methods on it or if you don't accept any argument block is called in object instance.
+
+=== Example
+These examples are considered as same.
+  DynamicImage.new do |img|
+    img.text "<b>Warning</b>"
+    img.save! "warning.png"
+  end
+
+  DynamicImage.new do
+    text "<b>Warning</b>"
+    save! "warning.png"
+  end

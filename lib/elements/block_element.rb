@@ -5,11 +5,21 @@ module DynamicImageElements
   class BlockElement
     include ElementInterface
 
-    # Block element accepts options Hash. Block can be given and class provides element self to composite elements in it.
+    # Block element accepts options +Hash+. Block can be given and class provides element self to composite elements in it.
     #
     # Use methods provided by class to add elements.
     #
     # === Options
+    # You can use also aliases provided by ElementInterface::OPTIONS_ALIASES in all options +Hash+es.
+    #
+    # [:align]
+    #   TODO
+    # [:background]
+    #   TODO Default transparent
+    # [:border]
+    #   TODO
+    # [:height]
+    #   Sets height of element. Please note that real height is calculated as height + paddings + margins.
     # [:margin, :margin_top, :margin_right, :margin_bottom, :margin_left]
     #   Creates gap around element and other elements in canvas. You can specify all sides same by :margin or each side separately.
     #
@@ -31,13 +41,15 @@ module DynamicImageElements
     #
     #   See :margin for examples. It's similar.
     #
-    # [:background]
+    # [:vertical_align]
     #   TODO
-    # [:border]
-    #   TODO
+    # [:width]
+    #   Sets width of element. Please note that real width is calculated as width + paddings + margins.
+    #
     #
     # ==== Common options
     # These options can be given to any element in composition.
+    #
     # [:position]
     #   Moves element from its position. Valid values are :static, :relative, :absolute. Default is :static.
     #
@@ -52,8 +64,6 @@ module DynamicImageElements
     #   Vertical position in parent container
     # [:z]
     #   Z-order of objects in parent element. Default is 0 and elements are ordered by order they was created in.
-    # [:align]
-    #   TODO
     #
     def initialize(options, parent = nil, &block) # :yields: block_element
       @options = options
@@ -61,14 +71,14 @@ module DynamicImageElements
       @elements = [] #should looks like [[:x => int, :y => int, z => int, :obj => Element], ...]
       use_options :margin
       use_options :padding
-      block.call self if block
+      process self, &block if block
     end
 
     def width #:nodoc:
-      @options[:width]
+      @drawing ? inner_size[0] : @options[:width]
     end
     def height #:nodoc:
-      @options[:height]
+      @drawing ? inner_size[1] : @options[:height]
     end
     def width=(width) #:nodoc:
       @options[:width] = width if width > 0
@@ -98,6 +108,7 @@ module DynamicImageElements
 
     protected
     def draw!(x = 0, y = 0) #:nodoc:
+      @drawing = true
       x, y = recalculate_positions_for_draw x, y
       if @options[:background]
         context.save
@@ -119,6 +130,7 @@ module DynamicImageElements
         y_pos = element[:y].class == Proc ? element[:y].call : element[:y]
         element[:obj].draw! x_pos+x, y_pos+y
       end
+      @drawing = false
     end
 
     ###drawing elements
