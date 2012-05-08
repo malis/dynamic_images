@@ -11,23 +11,22 @@ module DynamicImageElements
     # Options can contain general attributes specified by BlockElement if it's created by it.
     #
     # [:crop]
-    #   TODO
+    #   Sets cropping rectangle by values in this order: [x, y, width, height]. Use +Array+ or +String+ to describe it, values in +String+ must be separated by space char.
     # [:height]
     #   Sets height of image.
     # [:width]
     #   Sets width of image.
-    # [:zoom]
-    #   TODO
     #
     def initialize(source, options, parent)
       @source = source
       @options = options
       @parent = parent
       use_options :margin
+      @crop = (@options[:crop].class == Array ? @options[:crop] : @options[:crop].to_s.split(/\s+/)).map(&:to_i) + [0, 0, 0, 0]
     end
 
     private
-    def load_image
+    def image
       @image ||= Cairo::ImageSurface.from_png @source
     end
 
@@ -35,25 +34,30 @@ module DynamicImageElements
     def inner_size #:nodoc:
       size = [0, 0]
       unless @options[:width] && @options[:height]
-        load_image
-        imgsize = [@image.width, @image.height]
+        size = [image.width, image.height]
       end
-      imgsize[0] = @options[:width] if @options[:width]
-      imgsize[1] = @options[:height] if @options[:height]
-      size[0] = imgsize[0] if imgsize[0] > size[0]
-      size[1] = imgsize[1] if imgsize[1] > size[1]
+      size[0] = @crop[2] if @crop[2] > 0
+      size[1] = @crop[3] if @crop[3] > 0
+      size[0] = @options[:width] if @options[:width]
+      size[1] = @options[:height] if @options[:height]
       size
     end
 
     def draw!(x, y) #:nodoc:
       x, y = recalculate_positions_for_draw x, y
-      @parent.context.save
-      @parent.context.set_source load_image, x, y
       w, h = element_size
-      @parent.context.rectangle x, y, w, h
+      imgsize = [image.width, image.height]
+      imgsize[0] = @crop[2] if @crop[2] > 0
+      imgsize[1] = @crop[3] if @crop[3] > 0
+      scale = [w.to_f/imgsize[0].to_f, h.to_f/imgsize[1].to_f]
+      @parent.context.scale *scale
+      @parent.context.save
+      @parent.context.set_source image, x/scale[0]-@crop[0], y/scale[1]-@crop[1]
+      @parent.context.rectangle x/scale[0], y/scale[1], w/scale[0], h/scale[1]
       @parent.context.clip
       @parent.context.paint
       @parent.context.restore
+      @parent.context.scale 1.0/scale[0], 1.0/scale[1]
     end
   end
 end

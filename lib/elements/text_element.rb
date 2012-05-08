@@ -15,18 +15,20 @@ module DynamicImageElements
     #   Alignment of paragraphs. Valid values are :left, :center and :right.
     # [:auto_dir]
     #   If true, compute the bidirectional base direction from the layout's contents.
+    # [:color]
+    #   Sets foreground of text element. Accepts value for DynamicImageSources::SourceFactory.
     # [:crop_to]
     #   Crop text to reach a speficied size. Use an Array or String separated by space chars to provide further agruments.
     #
-    #   Add :lines as second argument if size is for lines number, not by method. Lines are determined by parent cotainer or :width if it's given. See examples for more information.
-    #
     #   Valid crop_to methods are :letters, :words and :sentences. Default method is :words if no one is given. Sentence is determined by one of ".!?".
+    #
+    #   Add :lines (or :line) as second argument if size is for lines number, not by method. Lines are determined by parent cotainer or :width if it's given. See examples for more details.
     #
     #   ==== Examples
     #   * <tt>:crop_to => 10</tt> will crop text down to 10 words
     #   * <tt>:crop_to => [10, :letters]</tt> will crop text down to 10 letters and it's same as <tt>:crop => "10 letters"</tt>
     #   * <tt>:crop_to => [3, :lines]</tt> will crop text down by words to 3 lines
-    #   * <tt>:crop_to => [1, :lines, :letters]</tt> will crop text down by letters to 1 line
+    #   * <tt>:crop_to => [1, :line, :letters]</tt> will crop text down by letters to 1 line
     #
     # [:crop_suffix]
     #   It's value is added at end of text in case it's cropped. It can be caused by :crop and :to_fit options.
@@ -61,9 +63,6 @@ module DynamicImageElements
     #   * <tt>:to_fit => [:resize, 6, :crop, :letters]</tt> will reduce size down to 6 pt letters to fit, if it's not enought it will crop letters
     #   * <tt>:to_fit => [:crop, 2, :resize, 8, :crop, :letters]</tt> will crop text down to 2 words, if it's not enought to fit it will resize font down, but only to 8 pt and if it's still not enought it will continue with cropping text by letters
     #
-    # [:width]
-    #   Sets the width to which the lines should be wrapped. If it's not given element fits to parent element.
-    #
     def initialize(content, options, parent, &block) # :yields: pango_layout
       @content = content
       @options = options
@@ -73,8 +72,9 @@ module DynamicImageElements
     end
 
     private
+    SIZE_TOLERANCE = 4 # because pango_layout doesn't fix exactly to given size
     def setup_pango_layout(pango_layout)
-      pango_layout.set_width((@parent.width-@margin[1]-@margin[3])*Pango::SCALE) if @parent.width
+      pango_layout.set_width((@parent.width-@margin[1]-@margin[3]+SIZE_TOLERANCE)*Pango::SCALE) if @parent.width
       pango_layout.set_font_description Pango::FontDescription.new(@options[:font]) if @options[:font]
       pango_layout.set_width @options[:width]*Pango::SCALE if @options[:width]
       pango_layout.set_alignment({:left => Pango::ALIGN_LEFT, :center => Pango::ALIGN_CENTER, :right => Pango::ALIGN_RIGHT}[@options[:align].to_sym]) if @options[:align]
@@ -90,7 +90,7 @@ module DynamicImageElements
       if @options[:crop_to]
         option = @options[:crop_to].class == Array ? @options[:crop_to] : @options[:crop_to].to_s.downcase.strip.split(/\s+/)
         stop_value = option.shift.to_i
-        lines_unit = option[1].to_sym == :lines
+        lines_unit = option[1].to_sym == :lines || option[1].to_sym == :line
         option.shift if lines_unit
         suffix = @options[:crop_suffix].to_s
         txt += suffix
@@ -107,9 +107,9 @@ module DynamicImageElements
       end
       #to_fit option
       if @options[:to_fit]
-        width = @options[:width] || (@parent.width ? @parent.width-@margin[1]-@margin[3] : nil)
-        height = @parent.height ? @parent.height-@margin[0]-@margin[2] : nil
-        if width && height
+        width = (@options[:width] || (@parent.width ? @parent.width-@margin[1]-@margin[3] : nil)).to_i
+        height = (@parent.height ? @parent.height-@margin[0]-@margin[2] : nil).to_i
+        if width > 0 || height > 0
           suffix = @options[:crop_suffix].to_s
           txt += suffix unless suffixed
           option = @options[:to_fit].class == Array ? @options[:to_fit] : @options[:to_fit].to_s.downcase.strip.split(/\s+/)
@@ -129,7 +129,7 @@ module DynamicImageElements
               split = /\s+/ #words
               split = /[\.!\?]+/ if method_args.first.first == "sentences"
               split = // if method_args.first.first == "letters"
-              while (pango_layout.size[0]/Pango::SCALE > width || pango_layout.size[1]/Pango::SCALE > height) && txt.sub(/#{Regexp.escape(suffix)}$/, '').split(split).size > method_args.first.last.to_s.to_i
+              while (width > 0 && pango_layout.size[0]/Pango::SCALE > width+SIZE_TOLERANCE/2 || height > 0 && pango_layout.size[1]/Pango::SCALE > height+SIZE_TOLERANCE/2) && txt.sub(/#{Regexp.escape(suffix)}$/, '').split(split).size > method_args.first.last.to_s.to_i
                 txt = crop txt, suffix, method_args.first.first
                 pango_layout.set_text txt
               end
@@ -137,7 +137,7 @@ module DynamicImageElements
               pango_layout.set_font_description Pango::FontDescription.new unless pango_layout.font_description
               font_size = pango_layout.font_description.size
               font_size = 13 if font_size.zero?
-              while (pango_layout.size[0]/Pango::SCALE > width || pango_layout.size[1]/Pango::SCALE > height) && font_size > 1 && font_size > method_args.first.last.to_s.to_i
+              while (width > 0 && pango_layout.size[0]/Pango::SCALE > width+SIZE_TOLERANCE/2 || height > 0 && pango_layout.size[1]/Pango::SCALE > height+SIZE_TOLERANCE/2) && font_size > 1 && font_size > method_args.first.last.to_s.to_i
                 pango_layout.set_font_description pango_layout.font_description.set_size((font_size -= 1)*Pango::SCALE)
               end
             end
@@ -150,13 +150,13 @@ module DynamicImageElements
     end
 
     def crop(txt, suffix, method)
-      case method
-      when "sentences"
+      case method.to_s
+      when 'sentences'
         txt.sub(/([^\.!\?]+#{Regexp.escape(suffix)}|[^\.!\?]+[\.!\?]+#{Regexp.escape(suffix)})$/, '') + suffix
-      when "letters"
+      when 'letters'
         txt.sub(/[\S\s]#{Regexp.escape(suffix)}$/, '') + suffix
       else #words
-        txt.sub(/\s+\S+\s*#{Regexp.escape(suffix)}$/, '') + suffix
+        txt.sub(/\s*\S+\s*#{Regexp.escape(suffix)}$/, '') + suffix
       end
     end
 
@@ -183,6 +183,7 @@ module DynamicImageElements
 
     def draw!(x, y) #:nodoc:
       x, y = recalculate_positions_for_draw x, y
+      @options[:color].set_source context if @options[:color]
       @parent.context.move_to x, y
       @parent.context.show_pango_layout setup_pango_layout(@parent.context.create_pango_layout)
     end

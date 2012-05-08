@@ -17,33 +17,14 @@ end
 require 'cairo'
 require 'pango'
 require File.dirname(__FILE__) + '/elements/block_element.rb'
-require File.dirname(__FILE__) + '/elements/text_element.rb'
-require File.dirname(__FILE__) + '/elements/image_element.rb'
-
-module DynamicImageHelpers
-  class Surface
-    private
-    def initialize
-    end
-
-    public
-    def self.parse(color)
-      if color == :yellow
-        return [1, 1, 0, 1]
-      else
-        return [0, 1, 0, 1]
-      end
-    end
-  end
-end
 
 # DynamicImage provides interface to create an image in ruby code.
 #
 # :include:../README_USAGE.rdoc
 class DynamicImage < DynamicImageElements::BlockElement
-  # Gets original surface if width and height was given in options or it's created from existing source.
+  # Gets original Cairo::ImageSurface object if width and height was given in options or it's created from existing source.
   attr_reader :surface
-  # Gets original context of surface if width and height was given in options or it's created from existing source.
+  # Gets original Cairo::Context of Cairo::ImageSurface object if width and height was given in options or it's created from existing source.
   attr_reader :context
 
   # DynamicImage accepts options +Hash+. If block is given destroy method is called automatically after a block. Otherwise you have to call destroy manually.
