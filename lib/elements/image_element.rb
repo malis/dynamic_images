@@ -22,7 +22,7 @@ module DynamicImageElements
       @options = options
       @parent = parent
       use_options :margin
-      @crop = (@options[:crop].class == Array ? @options[:crop] : @options[:crop].to_s.split(/\s+/)).map(&:to_i) + [0, 0, 0, 0]
+      @crop = (@options[:crop].is_a?(Array) ? @options[:crop] : @options[:crop].to_s.split(/\s+/)).map(&:to_i) + [0, 0, 0, 0]
     end
 
     private
@@ -50,14 +50,14 @@ module DynamicImageElements
       imgsize[0] = @crop[2] if @crop[2] > 0
       imgsize[1] = @crop[3] if @crop[3] > 0
       scale = [w.to_f/imgsize[0].to_f, h.to_f/imgsize[1].to_f]
-      @parent.context.scale *scale
-      @parent.context.save
-      @parent.context.set_source image, x/scale[0]-@crop[0], y/scale[1]-@crop[1]
-      @parent.context.rectangle x/scale[0], y/scale[1], w/scale[0], h/scale[1]
-      @parent.context.clip
-      @parent.context.paint
-      @parent.context.restore
-      @parent.context.scale 1.0/scale[0], 1.0/scale[1]
+      context.scale *scale
+      context.save
+      context.set_source image, x/scale[0]-@crop[0], y/scale[1]-@crop[1]
+      context.rectangle x/scale[0], y/scale[1], w/scale[0], h/scale[1]
+      context.clip
+      context.paint
+      context.restore
+      context.scale 1.0/scale[0], 1.0/scale[1]
     end
   end
 end
