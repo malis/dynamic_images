@@ -1,7 +1,9 @@
 require File.dirname(__FILE__) + '/source_factory.rb'
 
 module DynamicImageSources
+  # Source prividing solid color to use as source.
   class ColorSource < SourceFactory
+    # Creates source object from <tt>Cairo::Color::RGB</tt> object and aplha as Float value.
     def initialize(color, alpha)
       alpha = nil unless alpha.class == Float
       @red = color.red
@@ -10,10 +12,39 @@ module DynamicImageSources
       @alpha = alpha || 1
     end
 
+    # Gives +Array+ of all known named colors. See http://cairo.rubyforge.org/doc/en/cairo-color.html#label-5
     def self.named_colors
       @@named_colors ||= Cairo::Color.constants.sort - %w{ RGB CMYK HSV X11 Base HEX_RE }
     end
 
+    # Returns source object or nil if it can't parse it.
+    #
+    # === Supported syntax
+    # All values can be given as +Array+ or +String+ separated by space chars.
+    #
+    # To make color transparent add number value at the end of +Array+ or +String+.
+    #
+    # For any number value are valid values are 0 - 255 or 0.0 - 1.0
+    #
+    # Name of color
+    #   Use one of ColorSource.named_colors.
+    # RGB
+    #   Use separated number values for red, green and blue.
+    # CMYK
+    #   Use :cmyk key as first value followed by separated number values for cyan, magenta, yellow and black.
+    # HSV
+    #   Use :hsv key as first value followed by separated number values for hue, saturation and value.
+    # HEX
+    #   Use +String+ starting with <tt>#</tt> char followed by 6 or 3 hex numbers. Hex numbers are doubled if only 3 hex numbers are given. Color <tt>#AABBCC</tt> is same as <tt>#ABC</tt>.
+    #
+    # === Example
+    # * <tt>:red</tt> is same as <tt>"red"</tt> and <tt>[:red]</tt>
+    # * <tt>[255, 0, 0]</tt> and <tt>"#FF0000"</tt> makes red color
+    # * <tt>[255, 0, 0, 64]</tt> and <tt>["#F00", 64]</tt> makes red color with 75% transparency
+    # * <tt>[1.0, 0, 0, 0.25]</tt> and <tt>"#F00 0.25"</tt> makes red color with 75% transparency
+    # * <tt>[:cmyk, 0, 0, 1.0, 0]</tt> makes yellow color
+    # * <tt>[:cmyk, 0, 0, 255, 0, 0.5]</tt> makes yellow color with 50% transparency
+    #
     def self.parse(source)
       if source[0].to_s =~ /^#([0-9a-f]{3}|[0-9a-f]{6})$/i
         hex = ($1.size == 6 ? $1 : $1.unpack('AXAAXAAXA').join).unpack("A2A2A2")
@@ -38,6 +69,7 @@ module DynamicImageSources
       end
     end
 
+    # Sets color as source to given context
     def set_source(context)
       context.set_source_rgba @red, @green, @blue, @alpha
     end

@@ -116,7 +116,7 @@ module DynamicImageElements
           zeros_count = nil
           sizes.each_with_index do |s, index|
             next unless s.class == Fixnum && s == 0
-            remaining_size = [size[dimension] - sizes.map{|siz| siz.class == Hash ? siz[:avg] : siz }.inject(:+).to_i, 0].max unless remaining_size
+            remaining_size = [size[dimension] - sizes.map{|siz| siz.is_a?(Hash) ? siz[:avg] : siz }.inject(:+).to_i, 0].max unless remaining_size
             zeros_count = sizes.select{|siz| siz.class == Fixnum && siz == 0}.size unless zeros_count
             sizes[index] = remaining_size/zeros_count
           end
@@ -124,9 +124,9 @@ module DynamicImageElements
           remaining_size = nil
           avgs_sum = nil
           sizes.each_with_index do |s, index|
-            next unless s.class == Hash
+            next unless s.is_a? Hash
             remaining_size = [size[dimension] - sizes.select{|siz| siz.class == Fixnum}.inject(:+).to_i, 0].max unless remaining_size
-            avgs_sum = [sizes.select{|siz| siz.class == Hash}.map{|siz| siz[:avg]}.inject(:+), 1].max unless avgs_sum
+            avgs_sum = [sizes.select{|siz| siz.is_a?(Hash)}.map{|siz| siz[:avg]}.inject(:+), 1].max unless avgs_sum
             sizes[index] = [remaining_size*s[:avg]/avgs_sum, 1].max
           end
           #   resize cell

@@ -72,7 +72,8 @@ module DynamicImageElements
     end
 
     private
-    SIZE_TOLERANCE = 4 # because pango_layout doesn't fix exactly to given size
+    # Tolerance of space to drawing because <tt>Pango::Layout</tt> doesn't fix exactly to given size
+    SIZE_TOLERANCE = 4
     def setup_pango_layout(pango_layout)
       pango_layout.set_width((@parent.width-@margin[1]-@margin[3]+SIZE_TOLERANCE)*Pango::SCALE) if @parent.width
       pango_layout.set_font_description Pango::FontDescription.new(@options[:font]) if @options[:font]
@@ -88,7 +89,7 @@ module DynamicImageElements
       #crop_to option
       suffixed = false
       if @options[:crop_to]
-        option = @options[:crop_to].class == Array ? @options[:crop_to] : @options[:crop_to].to_s.downcase.strip.split(/\s+/)
+        option = @options[:crop_to].is_a?(Array) ? @options[:crop_to] : @options[:crop_to].to_s.downcase.strip.split(/\s+/)
         stop_value = option.shift.to_i
         lines_unit = option[1].to_sym == :lines || option[1].to_sym == :line
         option.shift if lines_unit
@@ -112,7 +113,7 @@ module DynamicImageElements
         if width > 0 || height > 0
           suffix = @options[:crop_suffix].to_s
           txt += suffix unless suffixed
-          option = @options[:to_fit].class == Array ? @options[:to_fit] : @options[:to_fit].to_s.downcase.strip.split(/\s+/)
+          option = @options[:to_fit].is_a?(Array) ? @options[:to_fit] : @options[:to_fit].to_s.downcase.strip.split(/\s+/)
           methods = [] #it should look like this [:method1, :method2, ..., :methodN]
           method_args = [] #it should look like this [[arg1, arg2, ..., stop_value1], [arg1, ..., stop_value2], ..., [arg1, ...]]
           option.each do |opt|
@@ -163,8 +164,8 @@ module DynamicImageElements
     public
     def inner_size #:nodoc:
       unless @size
-        if @parent.context
-          pango_layout = @parent.context.create_pango_layout
+        if context
+          pango_layout = context.create_pango_layout
         else
           tmp_surface = Cairo::ImageSurface.new 1, 1
           tmp_context = Cairo::Context.new tmp_surface
@@ -172,7 +173,7 @@ module DynamicImageElements
         end
         setup_pango_layout pango_layout
         size = pango_layout.size.map{|i| i/Pango::SCALE}
-        unless @parent.context
+        unless context
           tmp_context.destroy
           tmp_surface.destroy
         end
@@ -184,8 +185,8 @@ module DynamicImageElements
     def draw!(x, y) #:nodoc:
       x, y = recalculate_positions_for_draw x, y
       @options[:color].set_source context if @options[:color]
-      @parent.context.move_to x, y
-      @parent.context.show_pango_layout setup_pango_layout(@parent.context.create_pango_layout)
+      context.move_to x, y
+      context.show_pango_layout setup_pango_layout(context.create_pango_layout)
     end
   end
 end
