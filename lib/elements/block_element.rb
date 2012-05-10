@@ -20,8 +20,29 @@ module DynamicImageElements
     #   Sets background of element. Accepts value for DynamicImageSources::SourceFactory.
     #
     #   Default is transparent.
-    # [:border]
-    #   TODO
+    # [:border, :border_top, :border_right, :border_bottom, :border_left]
+    #   Creates border around element. You can specify all sides same by :border or each side separately. It's possible to set all same by :border and override one or more sides by f.e. :border_top.
+    #
+    #   Speficy border by +Array+ or +String+ separated by space chars in format <tt>[line_width line_style *color]</tt>. See accepted value for DynamicImageSources::SourceFactory.parse for accepted color sources.
+    #
+    #   Valid <tt>line_style</tt>s are:
+    #    :solid                    ───────────────────────────────────
+    #    :dotted                   ▪ ▪ ▪ ▪ ▪ ▪ ▪ ▪ ▪ ▪ ▪ ▪ ▪ ▪ ▪ ▪ ▪ ▪
+    #    :dashed                   ─── ─── ─── ─── ─── ─── ─── ─── ───
+    #    :dashed_bigger            ───── ───── ───── ───── ───── ─────
+    #    :dashed_big               ──────── ──────── ──────── ────────
+    #    :dashed_dot               ─── ▪ ─── ▪ ─── ▪ ─── ▪ ─── ▪ ─── ▪
+    #    :dashed_double_dot        ─── ▪ ▪ ─── ▪ ▪ ─── ▪ ▪ ─── ▪ ▪ ───
+    #    :dashed_big_bigger        ───── ─── ───── ─── ───── ─── ─────
+    #    :double_dotted            ▪ ▪   ▪ ▪   ▪ ▪   ▪ ▪   ▪ ▪   ▪ ▪
+    #    :triple_dotted            ▪ ▪ ▪   ▪ ▪ ▪   ▪ ▪ ▪   ▪ ▪ ▪   ▪ ▪
+    #    :double_dashed_dot        ─── ─── ▪ ─── ─── ▪ ─── ─── ▪ ─── ─
+    #    :double_dashed_double_dot ─── ─── ▪ ▪ ─── ─── ▪ ▪ ─── ─── ▪ ▪
+    #    :double_dashed_triple_dot ─── ─── ▪ ▪ ▪ ─── ─── ▪ ▪ ▪ ─── ───
+    #    :triple_dashed_dot        ─── ─── ─── ▪ ─── ─── ─── ▪ ─── ───
+    #    :triple_dashed_double_dot ─── ─── ─── ▪ ▪ ─── ─── ─── ▪ ▪ ───
+    #
+    #   You can add number to +line_style+ name to multiple space size. F.e.: <tt>[1, dotted3, :red]</tt>.
     # [:color]
     #   Sets foreground of inner text elements. Accepts value for DynamicImageSources::SourceFactory.
     # [:margin, :margin_top, :margin_right, :margin_bottom, :margin_left]
@@ -80,6 +101,7 @@ module DynamicImageElements
       @elements = [] #should looks like [[:x => int, :y => int, z => int, :obj => Element], ...]
       use_options :margin
       use_options :padding
+      use_options :border
       process self, &block if block
     end
 
@@ -118,6 +140,7 @@ module DynamicImageElements
 
     public
     def draw!(x = 0, y = 0) #:nodoc:
+      final_size
       original_source = context.source
       @drawing = true
       x, y = recalculate_positions_for_draw x, y
