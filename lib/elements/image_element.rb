@@ -10,6 +10,8 @@ module DynamicImageElements
     # === Options
     # Options can contain general attributes specified by BlockElement if it's created by it.
     #
+    # [:alpha]
+    #   Makes image semi-transparent. Valid values are 0.0 - 1.0 or "0%" - "100%". Default is 1.0.
     # [:crop]
     #   Sets cropping rectangle by values in this order: [x, y, width, height]. Use +Array+ or +String+ to describe it, values in +String+ must be separated by space char.
     # [:height]
@@ -55,7 +57,7 @@ module DynamicImageElements
       context.set_source image, x/scale[0]-@crop[0], y/scale[1]-@crop[1]
       context.rectangle x/scale[0], y/scale[1], w/scale[0], h/scale[1]
       context.clip
-      context.paint
+      context.paint @options[:alpha]
       context.restore
       context.scale 1.0/scale[0], 1.0/scale[1]
     end
