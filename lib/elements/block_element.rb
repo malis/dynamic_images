@@ -1,7 +1,7 @@
 require File.dirname(__FILE__) + '/element_interface.rb'
 
 module DynamicImageElements
-  # Element is used for compositing another elements in it. All inner elements are posisioned relative to block element position.
+  # Element is used for compositing another elements in it. All inner elements are positioned relative to block element position.
   class BlockElement
     include ElementInterface
 
@@ -23,7 +23,7 @@ module DynamicImageElements
     # [:border, :border_top, :border_right, :border_bottom, :border_left]
     #   Creates border around element. You can specify all sides same by :border or each side separately. It's possible to set all same by :border and override one or more sides by f.e. :border_top.
     #
-    #   Speficy border by +Array+ or +String+ separated by space chars in format <tt>[line_width line_style *color]</tt>. See accepted value for DynamicImageSources::SourceFactory.parse for accepted color sources.
+    #   Specify border by +Array+ or +String+ separated by space chars in format <tt>[line_width line_style *color]</tt>. See accepted value for DynamicImageSources::SourceFactory.parse for accepted color sources.
     #
     #   Valid <tt>line_style</tt>s are:
     #    :solid                    ───────────────────────────────────
@@ -49,7 +49,7 @@ module DynamicImageElements
     #   Creates gap around element and other elements in canvas. You can specify all sides same by :margin or each side separately.
     #
     #   You can specify all sides by :margin key too as an Array or String separated by space chars. Values has to be in this order: top, right, bottom, left.
-    #   When top equals bottom and right equals left you can use only two numbers to speficy both pairs.
+    #   When top equals bottom and right equals left you can use only two numbers to specify both pairs.
     #
     #   ==== Example
     #   * <tt>:margin_top => 10</tt> will create 10 px gap above element, other sides will have no gap
@@ -62,7 +62,7 @@ module DynamicImageElements
     #   Creates gap between element's border and its content (inner elements). You can specify all sides same by :padding or each side separately.
     #
     #   You can specify all sides by :padding key too as an Array or String separated by space chars. Values has to be in this order: top, right, bottom, left.
-    #   When top equals bottom and right equals left you can use only two numbers to speficy both pairs.
+    #   When top equals bottom and right equals left you can use only two numbers to specify both pairs.
     #
     #   See :margin for examples. It's similar.
     #
@@ -75,7 +75,7 @@ module DynamicImageElements
     # [:height]
     #   Sets height of element. Please note that real height is calculated as height + paddings + margins.
     #
-    #   You can use percentage as +String+. It will calculate height according to parent's element height. F.e.: <tt>"100%"</tt>
+    #   You can use percentage as +String+ or +Float+. It will calculate height according to parent's element height. F.e.: <tt>"100%"</tt> or <tt>1.0</tt>.
     # [:position]
     #   Moves element from its position. Valid values are :static, :relative, :absolute. Default is :static.
     #
@@ -87,7 +87,7 @@ module DynamicImageElements
     # [:width]
     #   Sets width of element. Please note that real width is calculated as width + paddings + margins.
     #
-    #   You can use percentage as +String+. It will calculate width according to parent's element width. F.e.: <tt>"100%"</tt>
+    #   You can use percentage as +String+ or +Float+. It will calculate width according to parent's element width. F.e.: <tt>"100%"</tt> or <tt>1.0</tt>.
     # [:x]
     #   Horizontal position in parent container (block element)
     # [:y]
@@ -180,10 +180,10 @@ module DynamicImageElements
     def add_element(e, options)
       @size = nil
       x = (options[:position].to_sym == :absolute ? options[:x] : nil) || 0
-      last_element = @elements.select{|el| el[:position] != :absolute }.last
-      y = (options[:position].to_sym == :absolute ? options[:x] : nil) || (last_element ? lambda{(last_element[:y].class == Proc ? last_element[:y].call : last_element[:y]) + last_element[:obj].final_size[1]} : 0)
+      y = (options[:position].to_sym == :absolute ? options[:y] : nil) || (@last_element ? lambda{(@last_element[:y].class == Proc ? @last_element[:y].call : @last_element[:y]) + @last_element[:obj].final_size[1]} : 0)
       z = options[:z] || 0
       element = {:x => x, :y => y, :z => z, :position => options[:position].to_sym, :width => options[:width], :height => options[:height], :obj => e}
+      @last_element = element unless element[:position] == :absolute
       e.set_width(width ? (width * options[:width]).to_i : nil, false) if options[:width].class == Float
       e.set_height(height ? (height * options[:height]).to_i : nil, false) if options[:height].class == Float
       @elements << element
