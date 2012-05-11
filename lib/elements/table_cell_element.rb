@@ -9,7 +9,7 @@ module DynamicImageElements
     # See BlockElement.new for more information
     #
     # === Options
-    # Options are same as for BlockElement. You can also use further options to set cell behaviour.
+    # Options are same as for BlockElement. You can also use further options to set cell behavior.
     #
     # [:colspan]
     #   Sets number of columns which this cells takes. Don't create next cells for already taken space.

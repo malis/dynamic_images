@@ -18,11 +18,11 @@ module DynamicImageElements
     # [:color]
     #   Sets foreground of text element. Accepts value for DynamicImageSources::SourceFactory.
     # [:crop_to]
-    #   Crop text to reach a speficied size. Use an Array or String separated by space chars to provide further agruments.
+    #   Crop text to reach a specified size. Use an Array or String separated by space chars to provide further arguments.
     #
     #   Valid crop_to methods are :letters, :words and :sentences. Default method is :words if no one is given. Sentence is determined by one of ".!?".
     #
-    #   Add :lines (or :line) as second argument if size is for lines number, not by method. Lines are determined by parent cotainer or :width if it's given. See examples for more details.
+    #   Add :lines (or :line) as second argument if size is for lines number, not by method. Lines are determined by parent container or :width if it's given. See examples for more details.
     #
     #   ==== Examples
     #   * <tt>:crop_to => 10</tt> will crop text down to 10 words
@@ -43,13 +43,13 @@ module DynamicImageElements
     # [:spacing]
     #   Sets the amount of spacing between the lines of the layout.
     # [:to_fit]
-    #   Sets method how to deform text to fit its parent element. You can use an Array or String seperated by space chars to provide further arguments.
+    #   Sets method how to deform text to fit its parent element. You can use an Array or String separated by space chars to provide further arguments.
     #
     #   Valid values are :crop and :resize.
     #
     #   Further argument for :crop are method of cropping (:letters, :words, :sentences). Default method is :words if no one is given. Sentence is determined by one of ".!?". You can specify text to add at end of text if it's cropped by :crop_suffix.
     #
-    #   You can combine methods in your own order by setting further method in next positions of Array or String. Stop value must be setted between methods to determine when to use next method.
+    #   You can combine methods in your own order by setting further method in next positions of Array or String. Stop value must be set between methods to determine when to use next method.
     #
     #   ==== Example
     #   For one method use:
@@ -57,11 +57,11 @@ module DynamicImageElements
     #   * <tt>:to_fit => :resize</tt>
     #   * <tt>:to_fit => [:crop, :letters]</tt> will crop text by letters to fit its parent container and its same as <tt>:to_fit => "crop letters"</tt>
     #   For more methods use:
-    #   * <tt>:to_fit => [:crop, 10, :resize]</tt> will crop down to 10 words to fit, if it's not enought it will reduce size of font
-    #   * <tt>:to_fit => [:crop, :letters, 10, :resize]</tt> will crop down to 10 letters to fit, if it's not enought it will reduce size of font
-    #   * <tt>:to_fit => [:resize, 6, :crop]</tt> will reduce size down to 6 pt letters to fit, if it's not enought it will crop words
-    #   * <tt>:to_fit => [:resize, 6, :crop, :letters]</tt> will reduce size down to 6 pt letters to fit, if it's not enought it will crop letters
-    #   * <tt>:to_fit => [:crop, 2, :resize, 8, :crop, :letters]</tt> will crop text down to 2 words, if it's not enought to fit it will resize font down, but only to 8 pt and if it's still not enought it will continue with cropping text by letters
+    #   * <tt>:to_fit => [:crop, 10, :resize]</tt> will crop down to 10 words to fit, if it's not enough it will reduce size of font
+    #   * <tt>:to_fit => [:crop, :letters, 10, :resize]</tt> will crop down to 10 letters to fit, if it's not enough it will reduce size of font
+    #   * <tt>:to_fit => [:resize, 6, :crop]</tt> will reduce size down to 6 pt letters to fit, if it's not enough it will crop words
+    #   * <tt>:to_fit => [:resize, 6, :crop, :letters]</tt> will reduce size down to 6 pt letters to fit, if it's not enough it will crop letters
+    #   * <tt>:to_fit => [:crop, 2, :resize, 8, :crop, :letters]</tt> will crop text down to 2 words, if it's not enough to fit it will resize font down, but only to 8 pt and if it's still not enough it will continue with cropping text by letters
     #
     def initialize(content, options, parent, &block) # :yields: pango_layout
       @content = content
@@ -184,7 +184,7 @@ module DynamicImageElements
 
     def draw!(x, y) #:nodoc:
       x, y = recalculate_positions_for_draw x, y
-      @options[:color].set_source context if @options[:color]
+      @options[:color].set_source context, x, y, *inner_size if @options[:color]
       context.move_to x, y
       context.show_pango_layout setup_pango_layout(context.create_pango_layout)
     end
