@@ -54,7 +54,7 @@ module DynamicImageElements
           width -= @margin[1] + @margin[3] if @margin
         end
         @options[:width] = width < 0 ? 0 : width
-        @size = nil #nullify any precalculated size
+        @size = nil #nullify any calculated size
         @elements.each {|e| e[:obj].recalculate_size! } if @elements #propagate size change to inner elements if there is any
       end
     end
@@ -68,13 +68,13 @@ module DynamicImageElements
           height -= @margin[0] + @margin[2] if @margin
         end
         @options[:height] = height < 0 ? 0 : height
-        @size = nil #nullify any precalculated size
+        @size = nil #nullify any calculated size
         @elements.each {|e| e[:obj].recalculate_size! } if @elements #propagate size change to inner elements if there is any
       end
     end
     # Clears cached size to force recalculating
     def recalculate_size! #:nodoc:
-      @size = nil #nullify any precalculated size
+      @size = nil #nullify any calculated size
     end
 
 
@@ -89,7 +89,7 @@ module DynamicImageElements
       end
     end
 
-    # Parse common options from @options +Hash+ by metakey
+    # Parse common options from @options +Hash+ by meta-key
     def use_options(metakey)
       if metakey == :margin || metakey == :padding
         value = [0, 0, 0, 0]
@@ -136,7 +136,7 @@ module DynamicImageElements
     # * :valign to specify :vertical_align
     OPTIONS_ALIASES = {:w => :width, :h => :height, :bg => :background, :valign => :vertical_align}
 
-    # Treats options Hash to generalize it and preparse sources
+    # Treats options Hash to generalize it and parse sources
     def self.treat_options(options)
       #convert all keys to symbols
       options.keys.each do |key|
@@ -153,10 +153,11 @@ module DynamicImageElements
         options[key] = options[key].to_i if options[key]
       end
       #check values that must be numeric, but can be in percentage
-      [:width, :height].each do |key|
+      [:width, :height, :alpha].each do |key|
         next unless options[key]
-        if options[key] =~ /%$/
-          options[key] = options[key].to_f/100.0
+        next if options[key].class == Float
+        if options[key] =~ /(\d+(?:.\d+)?)%?$/
+          options[key] = $1.to_f/100.0
         else
           options[key] = options[key].to_i
         end
@@ -175,8 +176,8 @@ module DynamicImageElements
     def draw_background(x, y)
       if @options[:background]
         context.save
-        @options[:background].set_source context
         w, h = element_size
+        @options[:background].set_source context, x, y, w, h
         context.rectangle x, y, w, h
         context.clip
         context.paint
@@ -230,8 +231,8 @@ module DynamicImageElements
         style = style.each_with_index.map{|i, index| index%2==1 ? i*multiple_gap : i} if multiple_gap
         context.set_dash style, style.size
         #line color
-        @border[key][2].set_source context
         w, h = element_size
+        @border[key][2].set_source context, x, y, w, h
         case key
         when :top
           context.move_to x-lines_width[:left], y-lines_width[:top]/2

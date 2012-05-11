@@ -1,6 +1,6 @@
 # Module keeps all source factories creating sources for drawing.
 module DynamicImageSources
-  # Main source factory provides interface for source´classes.
+  # Main source factory provides interface for source classes.
   #
   # It can also parse any supported source by parsing with all classes inherited from it.
   class SourceFactory
@@ -26,10 +26,11 @@ module DynamicImageSources
     end
 
     # Interface method for sources to sets them as source.
-    def set_source(context)
+    def set_source(context, x, y, w, h)
       raise Exception.new "not implemented in #{self.class}, but should be"
     end
   end
 end
 
 require File.dirname(__FILE__) + '/color_source.rb'
+require File.dirname(__FILE__) + '/gradient_source.rb'
