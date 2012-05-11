@@ -27,28 +27,43 @@ class DynamicImage < DynamicImageElements::BlockElement
   def initialize(options = {}, &block) # :yields: block_element
     treat_options options
     @options = options
+    @elements = [] # because it's inherited from block element
+    use_options :margin
+    use_options :padding
+    use_options :border
     if options[:width] && options[:height]
-      create_surface options[:width].to_i+@padding[1]+@padding[3]+@margin[1]+@margin[3], options[:height].to_i+@padding[0]+@padding[2]+@margin[0]+@margin[2]
+      w, h = options[:width].to_i, options[:height].to_i
+      if @padding
+        w += @padding[1] + @padding[3]
+        h += @padding[0] + @padding[2]
+      end
+      if @margin
+        w += @margin[1] + @margin[3]
+        h += @margin[0] + @margin[2]
+      end
+      create_surface w, h
     end
-    super options, &block
+    process self, &block if block
     destroy_by_block if block
   end
 
   private
   def create_surface(w, h)
     surface_args = [w, h]
-    surface_args.unshift({:a1 => Cairo::Format::A1,
-                          :a8 => Cairo::Format::A8,
-                          :rgb24 => Cairo::Format::RGB24,
-                          :argb32 => Cairo::Format::ARGB32
-                          }[@options[:format].to_sym]) if @options[:format]
+    surface_args.unshift({
+      :a1 => Cairo::Format::A1,
+      :a8 => Cairo::Format::A8,
+      :rgb24 => Cairo::Format::RGB24,
+      :argb32 => Cairo::Format::ARGB32
+    }[@options[:format].to_sym]) if @options[:format]
     @surface = Cairo::ImageSurface.new *surface_args
     @context = Cairo::Context.new surface
-    @context.set_antialias({:default => Cairo::ANTIALIAS_DEFAULT,
-                            :gray => Cairo::ANTIALIAS_GRAY,
-                            :none => Cairo::ANTIALIAS_NONE,
-                            :subpixel => Cairo::ANTIALIAS_SUBPIXEL
-                            }[@options[:antialias].to_sym]) if @options[:antialias]
+    @context.set_antialias({
+      :default => Cairo::ANTIALIAS_DEFAULT,
+      :gray => Cairo::ANTIALIAS_GRAY,
+      :none => Cairo::ANTIALIAS_NONE,
+      :subpixel => Cairo::ANTIALIAS_SUBPIXEL
+    }[@options[:antialias].to_sym]) if @options[:antialias]
   end
 
   def set_surface_and_create_context_for(surface)
@@ -149,7 +164,7 @@ class DynamicImage < DynamicImageElements::BlockElement
 
   public
   # Saves image content into more images if content is bigger than given image size.
-  # Image is cutted between elements in first level of elements hierarchy. In case of table it's cutted betwwen rows of table.
+  # Image is cut between elements in first level of elements hierarchy. In case of table it's cut between rows of table.
   # You can force duplicating elements by passing :TODO option to element. Duplicating of element is started by first rendering of it.
   #
   # Method accepts limit of pages to be rendered. If no number is given or 0 is passed it's not limited.
