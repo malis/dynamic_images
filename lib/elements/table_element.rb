@@ -73,7 +73,8 @@ module DynamicImageElements
       process self, &block if block
     end
 
-    def inner_size #:nodoc:
+    private
+    def inner_size
       unless @size
         size = [0, 0]
         # set width of cols and height of rows
@@ -149,8 +150,7 @@ module DynamicImageElements
       @size
     end
 
-    def draw!(x = 0, y = 0) #:nodoc:
-      x, y = recalculate_positions_for_draw x, y
+    def draw(x, y)
       draw_background x, y
       draw_border x, y
       inner_size
@@ -162,7 +162,6 @@ module DynamicImageElements
       @drawing = false
     end
 
-    private
     def add_element(e, options)
       @size = nil
       cols = [options[:colspan].to_i, 1].max

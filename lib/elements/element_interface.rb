@@ -4,23 +4,28 @@ require File.dirname(__FILE__) + '/../sources/source_factory.rb'
 module DynamicImageElements
   # Interface providing default methods for all elements in composite. Also contain some private methods which helps element to process common tasks.
   module ElementInterface
+    # Draws element and its inner element if there are any
+    def draw!(x = 0, y = 0, endless = false)
+      if @margin
+        x += @margin[3]
+        y += @margin[0]
+      end
+      if @options[:position].to_sym == :relative
+        x += @options[:x].to_i
+        y += @options[:y].to_i
+      end
+      draw x, y
+    end
+
+    private
+    def draw(x, y)
+      raise Exception.new "not implemented in #{self.class}, but should be"
+    end
+
     # Gives array that contains size of dimensions provided for inner elements.
     # It's calculated as #element_size - <i>padding</i>
     def inner_size
       raise Exception.new "not implemented in #{self.class}, but should be"
-    end
-    def draw!(x, y) #:nodoc:
-      raise Exception.new "not implemented in #{self.class}, but should be"
-    end
-
-    # Gets original Cairo::ImageSurface object if width and height was given in options or it's created from existing source.
-    def surface
-      @parent.surface
-    end
-
-    # Gets original Cairo::Context of Cairo::ImageSurface object if width and height was given in options or it's created from existing source.
-    def context
-      @parent.context
     end
 
     # Gives array that contains real size of element.
@@ -33,6 +38,7 @@ module DynamicImageElements
       [w, h]
     end
 
+    public
     # Gives array that contains size of space occupied of element.
     # It's calculated as #element_size + <i>margin</i>
     def final_size
@@ -42,6 +48,16 @@ module DynamicImageElements
         h += @margin[0] + @margin[2]
       end
       [w, h]
+    end
+
+    # Gets original Cairo::ImageSurface object if width and height was given in options or it's created from existing source.
+    def surface
+      @parent.surface
+    end
+
+    # Gets original Cairo::Context of Cairo::ImageSurface object if width and height was given in options or it's created from existing source.
+    def context
+      @parent.context
     end
 
     # Changes element's width option
@@ -54,8 +70,7 @@ module DynamicImageElements
           width -= @margin[1] + @margin[3] if @margin
         end
         @options[:width] = width < 0 ? 0 : width
-        @size = nil #nullify any calculated size
-        @elements.each {|e| e[:obj].recalculate_size! } if @elements #propagate size change to inner elements if there is any
+        recalculate_size!
       end
     end
     # Changes element's height option
@@ -68,15 +83,14 @@ module DynamicImageElements
           height -= @margin[0] + @margin[2] if @margin
         end
         @options[:height] = height < 0 ? 0 : height
-        @size = nil #nullify any calculated size
-        @elements.each {|e| e[:obj].recalculate_size! } if @elements #propagate size change to inner elements if there is any
+        recalculate_size!
       end
     end
     # Clears cached size to force recalculating
     def recalculate_size! #:nodoc:
       @size = nil #nullify any calculated size
+      @elements.each {|e| e[:obj].recalculate_size! } if @elements #propagate size change to inner elements if there is any
     end
-
 
     private
     # Processes a given block. Yields objects if the block expects any arguments.
@@ -114,19 +128,6 @@ module DynamicImageElements
           @border_sides_order = border_sides_order
         end
       end
-    end
-
-    # Calculates real position for drawing element by adding margin and x, y if positioning is relative.
-    def recalculate_positions_for_draw(x, y)
-      if @margin
-        x += @margin[3]
-        y += @margin[0]
-      end
-      if @options[:position].to_sym == :relative
-        x += @options[:x].to_i
-        y += @options[:y].to_i
-      end
-      [x, y]
     end
 
     # Aliases for option's keys. You can use these shortcuts:

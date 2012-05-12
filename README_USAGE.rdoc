@@ -24,3 +24,7 @@ These examples are considered as same.
     text "<b>Warning</b>"
     save! "warning.png"
   end
+
+== Image formats
+In base you can save and load all as PNG images. You can enable more formats by loading gtk library. DynamicImage will automatically detect it's loaded.
+  require 'gtk2'

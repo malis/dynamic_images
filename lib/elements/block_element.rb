@@ -114,7 +114,8 @@ module DynamicImageElements
       @drawing ? inner_size[1] : (@options[:height] || (@parent && @parent.height ? @parent.height - @padding[0] - @padding[2] - @margin[0] - @margin[2] : nil))
     end
 
-    def inner_size #:nodoc:
+    private
+    def inner_size
       unless @size
         size = [0, 0]
         size = content_size unless @options[:width] && @options[:height]
@@ -125,7 +126,6 @@ module DynamicImageElements
       @size
     end
 
-    private
     def content_size
       size = [0, 0]
       @elements.each do |element|
@@ -138,12 +138,10 @@ module DynamicImageElements
       size
     end
 
-    public
-    def draw!(x = 0, y = 0) #:nodoc:
+    def draw(x, y)
       final_size
       original_source = context.source
       @drawing = true
-      x, y = recalculate_positions_for_draw x, y
       draw_background x, y
       draw_border x, y
       if @padding
@@ -176,11 +174,11 @@ module DynamicImageElements
       context.set_source original_source
     end
 
-    private
     def add_element(e, options)
       @size = nil
       x = (options[:position].to_sym == :absolute ? options[:x] : nil) || 0
-      y = (options[:position].to_sym == :absolute ? options[:y] : nil) || (@last_element ? lambda{(@last_element[:y].class == Proc ? @last_element[:y].call : @last_element[:y]) + @last_element[:obj].final_size[1]} : 0)
+      last_element = @last_element
+      y = (options[:position].to_sym == :absolute ? options[:y] : nil) || (last_element ? lambda{(last_element[:y].class == Proc ? last_element[:y].call : last_element[:y]) + last_element[:obj].final_size[1]} : 0)
       z = options[:z] || 0
       element = {:x => x, :y => y, :z => z, :position => options[:position].to_sym, :width => options[:width], :height => options[:height], :obj => e}
       @last_element = element unless element[:position] == :absolute

@@ -65,6 +65,7 @@ module DynamicImageSources
         treat_numbers source
         new Cairo::Color::HSV.new(*source[1..3]).to_rgb, source[4]
       elsif named_colors.include? source[0].upcase
+        treat_numbers source
         new Cairo::Color.parse(source[0].upcase), source[1]
       end
     end

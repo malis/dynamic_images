@@ -124,6 +124,8 @@ class DynamicImage < DynamicImageElements::BlockElement
   #
   # If there is +Gdk+ loaded you can use any from <tt>Gdk::Pixbuf.formats</tt> as source. By default, "jpeg", "png" and "ico" are possible file formats to save in, but more formats may be installed.
   #
+  # When saving into JPEG format you can pass :quality into options. Valid values are in 0 - 100.
+  #
   def save!(file, options = {})
     treat_options options
     unless surface
@@ -174,12 +176,18 @@ class DynamicImage < DynamicImageElements::BlockElement
   #
   # If there is +Gdk+ loaded you can use any from <tt>Gdk::Pixbuf.formats</tt> as source. By default, "jpeg", "png" and "ico" are possible file formats to save in, but more formats may be installed.
   #
-  def save_endless!(limit = 0, &block) # :yields: index
-    #raise ... unless width and height
-    #if both sizes are given
-    #save_endless 4 do |index|
-    #  "image-#{index}.png"
-    #end
+  # When saving into JPEG format you can pass :quality into options. Valid values are in 0 - 100.
+  #
+  # === Example
+  #  save_endless 4 do |index|
+  #    "image-#{index}.png"
+  #  end
+  #
+  def save_endless!(limit = 0, options = {}, &block) # :yields: index
+    raise "Width and height must be set when you saving endless" unless @options[:width] || @options[:height]
+    treat_options options
+    draw! 0, 0, true
+    write_to file, options
   end
 
   # Destroys source objects to free a memory. It's important to call this method when it's finished to avoid a memory leaks.
@@ -190,4 +198,3 @@ class DynamicImage < DynamicImageElements::BlockElement
     context.destroy if context
   end
 end
-

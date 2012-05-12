@@ -32,8 +32,7 @@ module DynamicImageElements
       @image ||= Cairo::ImageSurface.from_png @source
     end
 
-    public
-    def inner_size #:nodoc:
+    def inner_size
       size = [0, 0]
       unless @options[:width] && @options[:height]
         size = [image.width, image.height]
@@ -45,8 +44,7 @@ module DynamicImageElements
       size
     end
 
-    def draw!(x, y) #:nodoc:
-      x, y = recalculate_positions_for_draw x, y
+    def draw(x, y)
       w, h = element_size
       imgsize = [image.width, image.height]
       imgsize[0] = @crop[2] if @crop[2] > 0
