@@ -4,6 +4,17 @@ require File.dirname(__FILE__) + '/../sources/source_factory.rb'
 module DynamicImageElements
   # Interface providing default methods for all elements in composite. Also contain some private methods which helps element to process common tasks.
   module ElementInterface
+    protected
+    # Gets original Cairo::ImageSurface object if width and height was given in options or it's created from existing source.
+    def surface
+      @parent.surface
+    end
+
+    # Gets original Cairo::Context of Cairo::ImageSurface object if width and height was given in options or it's created from existing source.
+    def context
+      @parent.context
+    end
+
     # Draws element and its inner element if there are any
     def draw!(x = 0, y = 0, endless = false)
       if @margin
@@ -50,16 +61,6 @@ module DynamicImageElements
       [w, h]
     end
 
-    # Gets original Cairo::ImageSurface object if width and height was given in options or it's created from existing source.
-    def surface
-      @parent.surface
-    end
-
-    # Gets original Cairo::Context of Cairo::ImageSurface object if width and height was given in options or it's created from existing source.
-    def context
-      @parent.context
-    end
-
     # Changes element's width option
     def set_width(width, inner = true) #:nodoc:
       if width.nil?
@@ -86,6 +87,8 @@ module DynamicImageElements
         recalculate_size!
       end
     end
+
+    protected
     # Clears cached size to force recalculating
     def recalculate_size! #:nodoc:
       @size = nil #nullify any calculated size
