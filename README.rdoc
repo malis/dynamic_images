@@ -2,4 +2,36 @@
 
 Ruby library providing image rendering described by dynamic templates
 
-:include:../README_USAGE.rdoc
+:nodoc:====== START COPY OF README_USAGE.rdoc ======
+= Usage of Library
+
+== In general about options
+Options should be in base given as hash. Format of keys in hash is not fixed. You can use +Symbol+ as good as +String+. There is also no difference between "-" and "_" chars.
+
+If option accepts more arguments you can specify they in +Array+ and also in +String+. In case you choose +String+ it's necessary to seperate arguments by space char.
+
+=== Example
+These <tt>Hash</tt>es are considered as absolutelly same.
+* <tt>{:vertical_align => :middle}</tt>, <tt>{'vertical_align' => 'middle'}</tt>, <tt>{"vertical-align" => :middle}</tt>, <tt>{:vertical_align => "middle"}</tt>, <tt>{:vertical_align => :middle}</tt>, etc.
+* <tt>{:to_fit => [:crop, :sentences, 3, :resize]}</tt>, <tt>{:to_fit => "crop sentences 3 resize"}</tt>, <tt>{'to-fit' => "crop sentences 3 resize"}</tt>, etc.
+
+== Passing a Block
+In block you can accept object to call methods on it or if you don't accept any argument, block is called in object instance.
+
+=== Example
+These examples are considered as same.
+  DynamicImage.new do |img|
+    img.text "<b>Warning</b>"
+    img.save! "warning.png"
+  end
+
+  DynamicImage.new do
+    text "<b>Warning</b>"
+    save! "warning.png"
+  end
+
+== Image formats
+In base you can save and load all as PNG images. You can enable more formats by loading gtk library. DynamicImage will automatically detect it's loaded.
+  require 'gtk2'
+
+:nodoc:====== END COPY OF README_USAGE.rdoc ======

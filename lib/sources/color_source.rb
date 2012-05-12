@@ -29,15 +29,15 @@ module DynamicImageSources
     #
     # For any number value are valid values are 0 - 255 or 0.0 - 1.0
     #
-    # Name of color
+    # [Name of color]
     #   Use one of ColorSource.named_colors.
-    # RGB
-    #   Use separated number values for red, green and blue.
-    # CMYK
+    # [RGB]
+    #    Use separated number values for red, green and blue.
+    # [CMYK]
     #   Use :cmyk key as first value followed by separated number values for cyan, magenta, yellow and black.
-    # HSV
+    # [HSV]
     #   Use :hsv key as first value followed by separated number values for hue, saturation and value.
-    # HEX
+    # [HEX]
     #   Use +String+ starting with <tt>#</tt> char followed by 6 or 3 hex numbers. Hex numbers are doubled if only 3 hex numbers are given. Color <tt>#AABBCC</tt> is same as <tt>#ABC</tt>.
     #
     # === Example

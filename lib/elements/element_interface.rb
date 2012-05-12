@@ -6,17 +6,17 @@ module DynamicImageElements
   module ElementInterface
     protected
     # Gets original Cairo::ImageSurface object if width and height was given in options or it's created from existing source.
-    def surface
+    def surface #:nodoc:
       @parent.surface
     end
 
     # Gets original Cairo::Context of Cairo::ImageSurface object if width and height was given in options or it's created from existing source.
-    def context
+    def context #:nodoc:
       @parent.context
     end
 
     # Draws element and its inner element if there are any
-    def draw!(x = 0, y = 0, endless = false)
+    def draw!(x = 0, y = 0, endless = false) #:nodoc:
       if @margin
         x += @margin[3]
         y += @margin[0]
