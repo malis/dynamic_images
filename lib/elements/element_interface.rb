@@ -5,12 +5,7 @@ module DynamicImageElements
   # Interface providing default methods for all elements in composite. Also contain some private methods which helps element to process common tasks.
   module ElementInterface
     protected
-    # Gets original Cairo::ImageSurface object if width and height was given in options or it's created from existing source.
-    def surface #:nodoc:
-      @parent.surface
-    end
-
-    # Gets original Cairo::Context of Cairo::ImageSurface object if width and height was given in options or it's created from existing source.
+    # Gets original Cairo::Context object if width and height was given in options or it's created from existing source.
     def context #:nodoc:
       @parent.context
     end

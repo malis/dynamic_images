@@ -7,12 +7,10 @@ require File.dirname(__FILE__) + '/parsers/xml_parser.rb'
 #
 # :include:../README_USAGE.rdoc
 class DynamicImage < DynamicImageElements::BlockElement
-  # Gets original Cairo::ImageSurface object if width and height was given in options or it's created from existing source.
-  attr_reader :surface
   # Gets original Cairo::Context of Cairo::ImageSurface object if width and height was given in options or it's created from existing source.
   attr_reader :context
 
-  # DynamicImage accepts options +Hash+. If block is given destroy method is called automatically after a block. Otherwise you have to call destroy manually.
+  # DynamicImage accepts options +Hash+. If block is given destroy method is called automatically after a block if source of image isn't Cairo object. Otherwise you have to call destroy manually.
   #
   # === Options
   # Image accepts also all options like BlockElement. See it first.
@@ -45,10 +43,14 @@ class DynamicImage < DynamicImageElements::BlockElement
   def create_surface(use_from_source = true)
     if @options[:from_source] && use_from_source
       if @options[:from_source].is_a? Cairo::Surface
-        set_surface_and_create_context_for @options[:from_source]
+        set_surface_and_context @options[:from_source]
+         @options[:auto_destroy] = false
+      elsif @options[:from_source].is_a? Cairo::Context
+        set_surface_and_context nil, @options[:from_source]
+        @options[:auto_destroy] = false
       elsif @options[:from_source].to_s =~ /\.png$/i
         image = Cairo::ImageSurface.from_png @options[:from_source]
-        set_surface_and_create_context_for image
+        set_surface_and_context image
         set_width image.width, false
         set_height image.height, false
       else
@@ -85,7 +87,7 @@ class DynamicImage < DynamicImageElements::BlockElement
         :argb32 => Cairo::Format::ARGB32
       }[@options[:format].to_sym]) if @options[:format]
       @surface = Cairo::ImageSurface.new *surface_args
-      @context = Cairo::Context.new surface
+      @context = Cairo::Context.new @surface
       @context.set_antialias({
         :default => Cairo::ANTIALIAS_DEFAULT,
         :gray => Cairo::ANTIALIAS_GRAY,
@@ -95,9 +97,9 @@ class DynamicImage < DynamicImageElements::BlockElement
     end
   end
 
-  def set_surface_and_create_context_for(surface)
+  def set_surface_and_context(surface, context = nil)
     @surface = surface
-    @context = Cairo::Context.new surface
+    @context = context || Cairo::Context.new(surface)
   end
 
   # Call this if block is given to destroy surface
@@ -122,7 +124,7 @@ class DynamicImage < DynamicImageElements::BlockElement
     DynamicImage.new options, &block
   end
 
-  # Saves image into file(TODO: or given IO object).
+  # Saves image into file(TODO: or given IO object). Image will be drawed only if no file is given. It's usable when you drawing into prepared Cairo object.
   #
   # PNG format is always supported.
   #
@@ -130,9 +132,9 @@ class DynamicImage < DynamicImageElements::BlockElement
   #
   # When saving into JPEG format you can pass :quality into options. Valid values are in 0 - 100.
   #
-  def save!(file, options = {})
+  def save!(file = nil, options = {})
     treat_options options
-    unless surface
+    unless context
       canvas_size = final_size
       canvas_size[0] = @options[:width] if @options[:width]
       canvas_size[1] = @options[:height] if @options[:height]
@@ -141,14 +143,14 @@ class DynamicImage < DynamicImageElements::BlockElement
       create_surface
     end
     draw!
-    write_to file, options
+    write_to file, options if file
   end
 
   private
   def write_to(file, options)
     ext = file.scan(/\.([a-z]+)$/i).flatten.first.downcase
     if ext == "png"
-      surface.write_to_png file
+      context.target.write_to_png file
     else
       raise "Unsupported file type #{ext}" unless defined? Gdk
       w, h = @options[:width], @options[:height]
@@ -210,7 +212,7 @@ class DynamicImage < DynamicImageElements::BlockElement
   #
   # If you passed a block to DynamicImage.new or DynamicImage.from it's called automatically after block is finished.
   def destroy
-    surface.destroy if surface
-    context.destroy if context
+    @surface.destroy if @surface
+    @context.destroy if @context
   end
 end

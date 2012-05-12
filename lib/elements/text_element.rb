@@ -182,7 +182,14 @@ module DynamicImageElements
     end
 
     def draw(x, y, endless) #:nodoc:
-      @options[:color].set_source context, x, y, *inner_size if @options[:color]
+      if @options[:color]
+        color_x = x
+        width = nil
+        width = @parent.width-@margin[1]-@margin[3]+SIZE_TOLERANCE if @parent.width
+        width = @options[:width] if @options[:width]
+        color_x = x + (width-inner_size[0])/2 if width
+        @options[:color].set_source *[context, color_x, y, inner_size].flatten
+      end
       context.move_to x, y
       context.show_pango_layout setup_pango_layout(context.create_pango_layout)
     end
