@@ -126,23 +126,26 @@ class DynamicImage < DynamicImageElements::BlockElement
 
   # Saves image into file(TODO: or given IO object). Image will be drawed only if no file is given. It's usable when you drawing into prepared Cairo object.
   #
+  # Block can be given to draw into context directly.
+  #
   # PNG format is always supported.
   #
   # If there is +Gdk+ loaded you can use any from <tt>Gdk::Pixbuf.formats</tt> as source. By default, "jpeg", "png" and "ico" are possible file formats to save in, but more formats may be installed.
   #
   # When saving into JPEG format you can pass :quality into options. Valid values are in 0 - 100.
   #
-  def save!(file = nil, options = {})
+  def save!(file = nil, options = {}, &block) # :yields: context
     treat_options options
     unless context
       canvas_size = final_size
       canvas_size[0] = @options[:width] if @options[:width]
       canvas_size[1] = @options[:height] if @options[:height]
-      @options[:width] = canvas_size[0]
-      @options[:height] = canvas_size[1]
+      set_width canvas_size[0], false
+      set_height canvas_size[1], false
       create_surface
     end
     draw!
+    block.call context if block
     write_to file, options if file
   end
 
