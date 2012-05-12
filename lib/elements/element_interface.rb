@@ -15,8 +15,19 @@ module DynamicImageElements
       @parent.context
     end
 
+    # Gets left and bottom borders of drawing canvas
+    def canvas_border #:nodoc:
+      @parent.canvas_border
+    end
+
+    # Gets index of drawing endless from canvas
+    def drawing_endless #:nodoc:
+      @parent.drawing_endless
+    end
+
     # Draws element and its inner element if there are any
     def draw!(x = 0, y = 0, endless = false) #:nodoc:
+      return if is_drawed?
       if @margin
         x += @margin[3]
         y += @margin[0]
@@ -25,11 +36,32 @@ module DynamicImageElements
         x += @options[:x].to_i
         y += @options[:y].to_i
       end
-      draw x, y
+      unless endless && @parent
+        draw x, y, endless
+        @drawed = endless
+      else
+        element_border = final_size.each_with_index.map {|value, index| value + [x, y][index] }
+        puts "====="
+        puts canvas_border.inspect
+        puts element_border.inspect
+        if element_border[0] <= canvas_border[0] && element_border[1] <= canvas_border[1]
+          draw x, y, endless
+          @drawed = endless
+        end
+      end
+    end
+
+    # Gets whether element is drawed
+    def is_drawed? #:nodoc:
+      if @elements && !@elements.size.zero?
+        @elements.map{|e| e[:obj].is_drawed? }.inject(&:&)
+      else
+        @drawed && @drawed != drawing_endless
+      end
     end
 
     private
-    def draw(x, y)
+    def draw(x, y, endless)
       raise Exception.new "not implemented in #{self.class}, but should be"
     end
 
@@ -141,7 +173,7 @@ module DynamicImageElements
     OPTIONS_ALIASES = {:w => :width, :h => :height, :bg => :background, :valign => :vertical_align}
 
     # Treats options Hash to generalize it and parse sources
-    def self.treat_options(options)
+    def treat_options(options)
       #convert all keys to symbols
       options.keys.each do |key|
         next if key.class == Symbol
@@ -160,8 +192,10 @@ module DynamicImageElements
       [:width, :height, :alpha].each do |key|
         next unless options[key]
         next if options[key].class == Float
-        if options[key] =~ /(\d+(?:.\d+)?)%?$/
+        if options[key] =~ /(\d+)%$/
           options[key] = $1.to_f/100.0
+        elsif options[key] =~ /(\d+\.\d+)$/
+          options[key] = $1.to_f
         else
           options[key] = options[key].to_i
         end
@@ -171,9 +205,6 @@ module DynamicImageElements
       options[:position] = :static unless options[:position]
       options[:background] = DynamicImageSources::SourceFactory.parse options[:background] unless options[:background].to_s.empty?
       options[:color] = DynamicImageSources::SourceFactory.parse options[:color] unless options[:color].to_s.empty?
-    end
-    def treat_options(options)
-      ElementInterface.treat_options options
     end
 
     #drawing helpers

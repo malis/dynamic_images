@@ -1,6 +1,7 @@
 require 'cairo'
 require 'pango'
 require File.dirname(__FILE__) + '/elements/block_element.rb'
+require File.dirname(__FILE__) + '/parsers/xml_parser.rb'
 
 # DynamicImage provides interface to create an image in ruby code.
 #
@@ -24,15 +25,50 @@ class DynamicImage < DynamicImageElements::BlockElement
   #
   #   Valid values are :a1, :a8, :rgb24 and :argb32. See http://www.cairographics.org/manual/cairo-Image-Surfaces.html#cairo-format-t for details.
   #
+  # [:from_source]
+  #   Creates new DynamicImage from given source if it's supported. It has same behavior as DynamicImage.from.
+  #
   def initialize(options = {}, &block) # :yields: block_element
     treat_options options
     @options = options
-    @elements = [] # because it's inherited from block element
     use_options :margin
     use_options :padding
-    use_options :border
-    if options[:width] && options[:height]
-      w, h = options[:width].to_i, options[:height].to_i
+    if options[:width] && options[:height] || options[:from_source]
+      [:width, :height].each {|key| @options[key] = nil } if options[:from_source] #remove forbidden options
+      create_surface
+    end
+    super options, &block
+    destroy_by_block if block
+  end
+
+  private
+  def create_surface(use_from_source = true)
+    if @options[:from_source] && use_from_source
+      if @options[:from_source].is_a? Cairo::Surface
+        set_surface_and_create_context_for @options[:from_source]
+      elsif @options[:from_source].to_s =~ /\.png$/i
+        image = Cairo::ImageSurface.from_png @options[:from_source]
+        set_surface_and_create_context_for image
+        set_width image.width, false
+        set_height image.height, false
+      else
+        if defined? Gdk
+          pixbuf = Gdk::Pixbuf.new @options[:from_source]
+          set_width pixbuf.width, false
+          set_height pixbuf.height, false
+          create_surface false
+          context.save
+          context.set_source_pixbuf pixbuf, 0, 0
+          context.rectangle 0, 0, pixbuf.width, pixbuf.height
+          context.clip
+          context.paint
+          context.restore
+        else
+          raise "Unsupported source format of: #{@options[:from_source]}"
+        end
+      end
+    else
+      w, h = @options[:width].to_i, @options[:height].to_i
       if @padding
         w += @padding[1] + @padding[3]
         h += @padding[0] + @padding[2]
@@ -41,29 +77,22 @@ class DynamicImage < DynamicImageElements::BlockElement
         w += @margin[1] + @margin[3]
         h += @margin[0] + @margin[2]
       end
-      create_surface w, h
+      surface_args = [w, h]
+      surface_args.unshift({
+        :a1 => Cairo::Format::A1,
+        :a8 => Cairo::Format::A8,
+        :rgb24 => Cairo::Format::RGB24,
+        :argb32 => Cairo::Format::ARGB32
+      }[@options[:format].to_sym]) if @options[:format]
+      @surface = Cairo::ImageSurface.new *surface_args
+      @context = Cairo::Context.new surface
+      @context.set_antialias({
+        :default => Cairo::ANTIALIAS_DEFAULT,
+        :gray => Cairo::ANTIALIAS_GRAY,
+        :none => Cairo::ANTIALIAS_NONE,
+        :subpixel => Cairo::ANTIALIAS_SUBPIXEL
+      }[@options[:antialias].to_sym]) if @options[:antialias]
     end
-    process self, &block if block
-    destroy_by_block if block
-  end
-
-  private
-  def create_surface(w, h)
-    surface_args = [w, h]
-    surface_args.unshift({
-      :a1 => Cairo::Format::A1,
-      :a8 => Cairo::Format::A8,
-      :rgb24 => Cairo::Format::RGB24,
-      :argb32 => Cairo::Format::ARGB32
-    }[@options[:format].to_sym]) if @options[:format]
-    @surface = Cairo::ImageSurface.new *surface_args
-    @context = Cairo::Context.new surface
-    @context.set_antialias({
-      :default => Cairo::ANTIALIAS_DEFAULT,
-      :gray => Cairo::ANTIALIAS_GRAY,
-      :none => Cairo::ANTIALIAS_NONE,
-      :subpixel => Cairo::ANTIALIAS_SUBPIXEL
-    }[@options[:antialias].to_sym]) if @options[:antialias]
   end
 
   def set_surface_and_create_context_for(surface)
@@ -77,6 +106,11 @@ class DynamicImage < DynamicImageElements::BlockElement
   end
 
   public
+  # Gets left and bottom borders of drawing canvas
+  def canvas_border
+    [@options[:width]+@margin[3]+@padding[3], @options[:height]+@margin[2]+@padding[2]]
+  end
+
   # Creates new DynamicImage from given source if it's supported. Use it in same way as DynamicImage.new.
   #
   # PNG is always supported as source.
@@ -84,38 +118,8 @@ class DynamicImage < DynamicImageElements::BlockElement
   # If there is +Gdk+ loaded you can use any from <tt>Gdk::Pixbuf.formats</tt> as source. By default, "jpeg", "png" and "ico" are possible file formats to load from, but more formats may be installed.
   #
   def self.from(source, options = {}, &block) # :yields: block_element
-    DynamicImageElements::ElementInterface.treat_options options
-    #remove forbidden options
-    [:width, :height].each {|key| options[key] = nil } #, :margin, :margin_top, :margin_right, :margin_bottom, :margin_left
-    object = DynamicImage.new options
-    if source.is_a? Cairo::Surface
-      object.send :set_surface_and_create_context_for, source
-    elsif source.to_s =~ /´\.png$/i
-      image = Cairo::ImageSurface.from_png(source)
-      object.send :set_surface_and_create_context_for, image
-      object.send :set_width, image.width, false
-      object.send :set_height, image.height, false
-    else
-      if defined? Gdk
-        pixbuf = Gdk::Pixbuf.new source
-        object.send :set_width, pixbuf.width, false
-        object.send :set_height, pixbuf.height, false
-        object.send :create_surface, pixbuf.width, pixbuf.height
-        object.context.save
-        object.context.set_source_pixbuf pixbuf, 0, 0
-        object.context.rectangle 0, 0, pixbuf.width, pixbuf.height
-        object.context.clip
-        object.context.paint
-        object.context.restore
-      else
-        raise "Unsupported source format of: #{source}"
-      end
-    end
-    if block
-      object.send :process, object, &block
-      object.send :destroy_by_block
-    end
-    object
+    options[:from_source] = source
+    DynamicImage.new options, &block
   end
 
   # Saves image into file(TODO: or given IO object).
@@ -134,8 +138,7 @@ class DynamicImage < DynamicImageElements::BlockElement
       canvas_size[1] = @options[:height] if @options[:height]
       @options[:width] = canvas_size[0]
       @options[:height] = canvas_size[1]
-      @surface = Cairo::ImageSurface.new *canvas_size
-      @context = Cairo::Context.new surface
+      create_surface
     end
     draw!
     write_to file, options
@@ -186,8 +189,21 @@ class DynamicImage < DynamicImageElements::BlockElement
   def save_endless!(limit = 0, options = {}, &block) # :yields: index
     raise "Width and height must be set when you saving endless" unless @options[:width] || @options[:height]
     treat_options options
-    draw! 0, 0, true
-    write_to file, options
+    @drawing_endless = index = 0
+    loop do
+      draw! 0, 0, index
+      write_to block.call(index), options
+      destroy
+      create_surface
+      index += 1
+      @drawing_endless = index
+      break if index == limit || is_drawed?
+    end
+  end
+
+  # Gets index of drawing endless from canvas
+  def drawing_endless #:nodoc:
+    @drawing_endless
   end
 
   # Destroys source objects to free a memory. It's important to call this method when it's finished to avoid a memory leaks.

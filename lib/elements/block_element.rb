@@ -138,7 +138,7 @@ module DynamicImageElements
       size
     end
 
-    def draw(x, y)
+    def draw(x, y, endless)
       final_size
       original_source = context.source
       @drawing = true
@@ -150,6 +150,7 @@ module DynamicImageElements
       end
       content_height = content_size[1]
       @elements.sort{|a, b| a[:z] <=> b[:z]}.each do |element|
+        next if element[:obj].is_drawed?
         element[:obj].set_width((width * element[:width]).to_i, false) if element[:width].class == Float
         element[:obj].set_height((height * element[:height]).to_i, false) if element[:height].class == Float
         if element[:position] == :absolute || (element[:obj].class == TextElement && !element[:width])
@@ -168,7 +169,7 @@ module DynamicImageElements
         y_pos += (inner_size[1]-content_height)/2 if @options[:vertical_align].to_s == "middle"
         y_pos += inner_size[1]-content_height if @options[:vertical_align].to_s == "bottom"
         @options[:color].set_source context if @options[:color]
-        element[:obj].draw! x_pos+x, y_pos+y
+        element[:obj].draw! x_pos+x, y_pos+y, endless
       end
       @drawing = false
       context.set_source original_source
@@ -178,7 +179,7 @@ module DynamicImageElements
       @size = nil
       x = (options[:position].to_sym == :absolute ? options[:x] : nil) || 0
       last_element = @last_element
-      y = (options[:position].to_sym == :absolute ? options[:y] : nil) || (last_element ? lambda{(last_element[:y].class == Proc ? last_element[:y].call : last_element[:y]) + last_element[:obj].final_size[1]} : 0)
+      y = (options[:position].to_sym == :absolute ? options[:y] : nil) || (last_element ? lambda{(last_element[:y].class == Proc ? last_element[:y].call : last_element[:y]) + (last_element[:obj].is_drawed? ? 0 : last_element[:obj].final_size[1])} : 0)
       z = options[:z] || 0
       element = {:x => x, :y => y, :z => z, :position => options[:position].to_sym, :width => options[:width], :height => options[:height], :obj => e}
       @last_element = element unless element[:position] == :absolute

@@ -44,7 +44,7 @@ module DynamicImageElements
       size
     end
 
-    def draw(x, y)
+    def draw(x, y, endless)
       w, h = element_size
       imgsize = [image.width, image.height]
       imgsize[0] = @crop[2] if @crop[2] > 0

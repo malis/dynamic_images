@@ -150,7 +150,7 @@ module DynamicImageElements
       @size
     end
 
-    def draw(x, y)
+    def draw(x, y, endless)
       draw_background x, y
       draw_border x, y
       inner_size
