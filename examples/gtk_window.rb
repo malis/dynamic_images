@@ -29,7 +29,7 @@ class Win < Gtk::Window
 
     DynamicImage.from @darea.window.create_cairo_context do
       block :w => w, :h => h, :bg => [:gradient_radial_repeat, "225deg", "50%", "0%", :lime, "50%", :red, "100%", :orange], :align => :center, :valign => :middle do
-        text "Try to resize it!", :font => "Arial bold 48", :color => [:gradient_repeat, "0%", :blue, "100%", :yellow]
+        text "Try to resize me!", :font => "Arial bold 48", :color => [:gradient_repeat, "0%", :blue, "100%", :yellow]
       end
       save!
     end

@@ -15,6 +15,7 @@ module DynamicImageParsers
   # === Example
   #
   #  <?xml version="1.0" encoding="UTF-8" ?>
+  #  <!DOCTYPE dynamic_images PUBLIC "-//malis//dynamic_images//EN" "https://raw.github.com/malis/dynamic_images/master/lib/parsers/xml.dtd">
   #  <dynamic_images>
   #   <dynamic_image from_source="earth.jpg" align="center" valign="middle" background="red 0.5" save="test_from.jpg" quality="90">
   #    <text font="Arial bold 15">testing <u>adding</u> some text to image</text>

@@ -2,6 +2,13 @@
 
 Ruby library providing image rendering described by dynamic templates
 
+== Dependencies
+
+Library is using these libraries:
+* cairo
+* pango
+* rexml
+
 :nodoc:====== START COPY OF README_USAGE.rdoc ======
 = Usage of Library
 
