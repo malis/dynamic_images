@@ -9,7 +9,12 @@ Library is using these libraries:
 * pango
 * rexml
 
-:nodoc:====== START COPY OF README_USAGE.rdoc ======
+
+
+
+
+
+
 = Usage of Library
 
 == In general about options
@@ -41,4 +46,3 @@ These examples are considered as same.
 In base you can save and load all as PNG images. You can enable more formats by loading gtk library. DynamicImage will automatically detect it's loaded.
   require 'gtk2'
 
-:nodoc:====== END COPY OF README_USAGE.rdoc ======
