@@ -5,12 +5,10 @@ require File.dirname(__FILE__) + '/../init.rb'
 class Win < Gtk::Window
   def initialize
     super
-
     set_title "DynamicImage Gtk Test"
     signal_connect "destroy" do
       Gtk.main_quit
     end
-
     resize 300, 300
 
     @darea = Gtk::DrawingArea.new
