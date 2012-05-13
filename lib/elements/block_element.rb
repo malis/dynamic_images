@@ -45,19 +45,6 @@ module DynamicImageElements
     #   You can add number to +line_style+ name to multiple space size. F.e.: <tt>[1, dotted3, :red]</tt>.
     # [:color]
     #   Sets foreground of inner text elements. Accepts value for DynamicImageSources::SourceFactory.
-    # [:margin, :margin_top, :margin_right, :margin_bottom, :margin_left]
-    #   Creates gap around element and other elements in canvas. You can specify all sides same by :margin or each side separately.
-    #
-    #   You can specify all sides by :margin key too as an Array or String separated by space chars. Values has to be in this order: top, right, bottom, left.
-    #   When top equals bottom and right equals left you can use only two numbers to specify both pairs.
-    #
-    #   ==== Example
-    #   * <tt>:margin_top => 10</tt> will create 10 px gap above element, other sides will have no gap
-    #   * <tt>:margin => 10</tt> will create gap 10 px at all sides
-    #   * <tt>:margin => [5, 10, 10, 5]</tt> will create gaps 5 px above, 10 px at right side and below, 5 px at left side
-    #   * <tt>:margin => [5, 10, 10, 5]</tt> is same as <tt>:margin => "5 10 10 5"</tt>
-    #   * <tt>:margin => [5, 10, 5, 10]</tt> is same as <tt>:margin => [5, 10]</tt> and <tt>:margin => "5 10"</tt>
-    #
     # [:padding, :padding_top, :padding_right, :padding_bottom, :padding_left]
     #   Creates gap between element's border and its content (inner elements). You can specify all sides same by :padding or each side separately.
     #
@@ -76,6 +63,19 @@ module DynamicImageElements
     #   Sets height of element. Please note that real height is calculated as height + paddings + margins.
     #
     #   You can use percentage as +String+ or +Float+. It will calculate height according to parent's element height. F.e.: <tt>"100%"</tt> or <tt>1.0</tt>.
+    # [:margin, :margin_top, :margin_right, :margin_bottom, :margin_left]
+    #   Creates gap around element and other elements in canvas. You can specify all sides same by :margin or each side separately.
+    #
+    #   You can specify all sides by :margin key too as an Array or String separated by space chars. Values has to be in this order: top, right, bottom, left.
+    #   When top equals bottom and right equals left you can use only two numbers to specify both pairs.
+    #
+    #   ==== Example
+    #   * <tt>:margin_top => 10</tt> will create 10 px gap above element, other sides will have no gap
+    #   * <tt>:margin => 10</tt> will create gap 10 px at all sides
+    #   * <tt>:margin => [5, 10, 10, 5]</tt> will create gaps 5 px above, 10 px at right side and below, 5 px at left side
+    #   * <tt>:margin => [5, 10, 10, 5]</tt> is same as <tt>:margin => "5 10 10 5"</tt>
+    #   * <tt>:margin => [5, 10, 5, 10]</tt> is same as <tt>:margin => [5, 10]</tt> and <tt>:margin => "5 10"</tt>
+    #
     # [:position]
     #   Moves element from its position. Valid values are :static, :relative, :absolute. Default is :static.
     #

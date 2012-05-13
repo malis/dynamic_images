@@ -1,7 +1,7 @@
 require File.dirname(__FILE__) + '/element_interface.rb'
 
 module DynamicImageElements
-  # Element providing drawing of stylized text. You can use markup language of text specified by http://developer.gnome.org/pango/stable/PangoMarkupFormat.html.
+  # Element providing drawing of stylized text. You can use markup language of text specified by http://developer.gnome.org/pango/stable/PangoMarkupFormat.html
   class TextElement
     include ElementInterface
 
@@ -38,8 +38,6 @@ module DynamicImageElements
     #   Sets the width to indent each paragraph.
     # [:justify]
     #   Sets whether or not each complete line should be stretched to fill the entire width of the layout. This stretching is typically done by adding whitespace, but for some scripts (such as Arabic), the justification is done by extending the characters.
-    # [:margin]
-    #   Documented in BlockElement
     # [:spacing]
     #   Sets the amount of spacing between the lines of the layout.
     # [:to_fit]

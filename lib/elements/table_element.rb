@@ -59,8 +59,6 @@ module DynamicImageElements
     #   Sets number of columns in table structure. If value is given it will automatically sort cells to rows.
     #
     #   You can also manually wrap the row by calling row method between cells.
-    # [:margin, :margin_top, :margin_right, :margin_bottom, :margin_left]
-    #   Described in BlockElement
     #
     def initialize(options, parent = nil, &block) # :yields: table_element
       @options = options
