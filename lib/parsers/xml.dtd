@@ -3,7 +3,7 @@
 <!--
     Document type definition of XML document defining dynamic images
     PUBLIC ID: -//malis//dynamic_images//EN
-    SYSTEM ID: https://github.com/malis/dynamic_images/lib/parsers/xml.dtd
+    SYSTEM ID: https://raw.github.com/malis/dynamic_images/master/lib/parsers/xml.dtd
 
 -->
 
@@ -12,7 +12,7 @@
 
     <?xml version="1.0"?>
 
-    <!DOCTYPE dynamic_images PUBLIC "-//malis//dynamic_images//EN" "https://github.com/malis/dynamic_images/lib/parsers/xml.dtd">
+    <!DOCTYPE dynamic_images PUBLIC "-//malis//dynamic_images//EN" "https://raw.github.com/malis/dynamic_images/master/lib/parsers/xml.dtd">
 
     <dynamic_images>
     ...
