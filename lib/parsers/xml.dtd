@@ -1,0 +1,154 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!--
+    Document type definition of XML document defining dynamic images
+    PUBLIC ID: -//malis//dynamic_images//EN
+    SYSTEM ID: https://github.com/malis/dynamic_images/lib/parsers/xml.dtd
+
+-->
+
+<!--
+    An example how to use this DTD from your XML document:
+
+    <?xml version="1.0"?>
+
+    <!DOCTYPE dynamic_images PUBLIC "-//malis//dynamic_images//EN" "https://github.com/malis/dynamic_images/lib/parsers/xml.dtd">
+
+    <dynamic_images>
+    ...
+    </dynamic_images>
+-->
+
+<!--- Root element dynamic_images can contain also more than one dynamic_image definition -->
+<!ELEMENT dynamic_images (dynamic_image)*>
+
+<!--- Block element and inherited classes which can contain same elements -->
+<!ENTITY % BlockElements "(block|image|table|text)*">
+<!ELEMENT dynamic_image %BlockElements;>
+<!ELEMENT block %BlockElements;>
+<!ENTITY % common_attrs
+ "height          CDATA                       #IMPLIED
+  h               CDATA                       #IMPLIED
+  margin          CDATA                #IMPLIED
+  margin_top      CDATA                #IMPLIED
+  margin_right    CDATA                #IMPLIED
+  margin_bottom   CDATA                #IMPLIED
+  margin_left     CDATA                #IMPLIED
+  position        (static|relative|absolute)  #IMPLIED
+  width           CDATA                       #IMPLIED
+  w               CDATA                       #IMPLIED
+  x               CDATA                       #IMPLIED
+  y               CDATA                       #IMPLIED
+  z               CDATA                       #IMPLIED"
+>
+<!ENTITY % border_attrs
+ "border          CDATA                #IMPLIED
+  border_top      CDATA                #IMPLIED
+  border_right    CDATA                #IMPLIED
+  border_bottom   CDATA                #IMPLIED
+  border_left     CDATA                #IMPLIED"
+>
+<!ENTITY % block_attrs
+ "%common_attrs;
+  %border_attrs;
+  align           (left|center|right)  #IMPLIED
+  background      CDATA                #IMPLIED
+  color           CDATA                #IMPLIED
+  padding         CDATA                #IMPLIED
+  padding_top     CDATA                #IMPLIED
+  padding_right   CDATA                #IMPLIED
+  padding_bottom  CDATA                #IMPLIED
+  padding_left    CDATA                #IMPLIED
+  vertical_align  CDATA                #IMPLIED
+  valign          CDATA                #IMPLIED"
+>
+<!ATTLIST dynamic_image
+  %block_attrs;
+  from_source   CDATA  #IMPLIED
+  save          CDATA  #IMPLIED
+  save_endless  CDATA  #IMPLIED
+  quality       CDATA  #IMPLIED
+>
+<!ATTLIST block %block_attrs;>
+
+<!--- Image element -->
+<!ELEMENT image (#PCDATA)>
+<!ATTLIST image
+  %common_attrs;
+  alpha           CDATA  #IMPLIED
+  crop            CDATA  #IMPLIED
+>
+
+<!--- Table element -->
+<!ELEMENT table (row|cell)*>
+<!ATTLIST table
+  %common_attrs;
+  background  CDATA  #IMPLIED
+  %border_attrs;
+  cols        CDATA  #IMPLIED
+>
+<!ELEMENT row (cell)*>
+<!ELEMENT cell %BlockElements;>
+<!ATTLIST cell %block_attrs;>
+
+
+<!-- Pango elements to ise in text element -->
+<!ENTITY % PangoElements "(#PCDATA|span|b|big|i|s|sub|sup|small|tt|u)*">
+<!ELEMENT span  %PangoElements;>
+<!ELEMENT b     %PangoElements;>
+<!ELEMENT big   %PangoElements;>
+<!ELEMENT i     %PangoElements;>
+<!ELEMENT s     %PangoElements;>
+<!ELEMENT sub   %PangoElements;>
+<!ELEMENT sup   %PangoElements;>
+<!ELEMENT small %PangoElements;>
+<!ELEMENT tt    %PangoElements;>
+<!ELEMENT u     %PangoElements;>
+<!ATTLIST span
+  font                 CDATA  #IMPLIED
+  font_desc            CDATA  #IMPLIED
+  font_family          CDATA  #IMPLIED
+  face                 CDATA  #IMPLIED
+  font_size            CDATA  #IMPLIED
+  size                 CDATA  #IMPLIED
+  font_style           CDATA  #IMPLIED
+  style                CDATA  #IMPLIED
+  font_weight          CDATA  #IMPLIED
+  weight               CDATA  #IMPLIED
+  font_variant         CDATA  #IMPLIED
+  variant              CDATA  #IMPLIED
+  font_stretch         CDATA  #IMPLIED
+  stretch              CDATA  #IMPLIED
+  foreground           CDATA  #IMPLIED
+  fgcolor              CDATA  #IMPLIED
+  color                CDATA  #IMPLIED
+  background           CDATA  #IMPLIED
+  bgcolor              CDATA  #IMPLIED
+  underline            CDATA  #IMPLIED
+  underline_color      CDATA  #IMPLIED
+  rise                 CDATA  #IMPLIED
+  strikethrough        CDATA  #IMPLIED
+  strikethrough_color  CDATA  #IMPLIED
+  fallback             CDATA  #IMPLIED
+  lang                 CDATA  #IMPLIED
+  leter_spacing        CDATA  #IMPLIED
+  gravity              CDATA  #IMPLIED
+  gravity_hint         CDATA  #IMPLIED
+>
+
+<!--- Text element -->
+<!ELEMENT text %PangoElements;>
+<!ATTLIST text
+  %common_attrs;
+  align        CDATA   #IMPLIED
+  auto_dir     (true)  #IMPLIED
+  color        CDATA   #IMPLIED
+  crop_to      CDATA   #IMPLIED
+  crop_suffix  CDATA   #IMPLIED
+  font         CDATA   #IMPLIED
+  indent       CDATA   #IMPLIED
+  justify      CDATA   #IMPLIED
+  spacng       CDATA   #IMPLIED
+  to_fit       CDATA   #IMPLIED
+>
+
