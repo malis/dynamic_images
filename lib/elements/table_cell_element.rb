@@ -15,6 +15,8 @@ module DynamicImageElements
     #   Sets number of columns which this cells takes. Don't create next cells for already taken space.
     # [:rowspan]
     #   Sets number of rows which this cells takes. Don't create next cells for already taken space.
+    # [:width]
+    #   Same as described in BlockElement. You can also set <tt>"0%"</tt> to fit all remaining space and ather elements will fit to its minimum size.
     #
     def initialize(options, parent = nil, &block) # :yields: block_element
       super options, parent, &block

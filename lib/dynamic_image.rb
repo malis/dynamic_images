@@ -79,6 +79,12 @@ class DynamicImage < DynamicImageElements::BlockElement
         w += @margin[1] + @margin[3]
         h += @margin[0] + @margin[2]
       end
+      if @border && !@border.empty?
+        w += @border[:left][0].to_i if @border[:left]
+        w += @border[:right][0].to_i if @border[:right]
+        h += @border[:top][0].to_i if @border[:top]
+        h += @border[:bottom][0].to_i if @border[:bottom]
+      end
       surface_args = [w, h]
       surface_args.unshift({
         :a1 => Cairo::Format::A1,

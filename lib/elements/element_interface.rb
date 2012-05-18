@@ -31,14 +31,15 @@ module DynamicImageElements
         x += @options[:x].to_i
         y += @options[:y].to_i
       end
+      if @border && !@border.empty?
+        x += @border[:left][0].to_i if @border[:left]
+        y += @border[:top][0].to_i if @border[:top]
+      end
       unless endless && @parent
         draw x, y, endless
         @drawed = endless
       else
         element_border = final_size.each_with_index.map {|value, index| value + [x, y][index] }
-        puts "====="
-        puts canvas_border.inspect
-        puts element_border.inspect
         if element_border[0] <= canvas_border[0] && element_border[1] <= canvas_border[1]
           draw x, y, endless
           @drawed = endless
@@ -85,6 +86,12 @@ module DynamicImageElements
         w += @margin[1] + @margin[3]
         h += @margin[0] + @margin[2]
       end
+      if @border && !@border.empty?
+        w += @border[:left][0].to_i if @border[:left]
+        w += @border[:right][0].to_i if @border[:right]
+        h += @border[:top][0].to_i if @border[:top]
+        h += @border[:bottom][0].to_i if @border[:bottom]
+      end
       [w, h]
     end
 
@@ -96,6 +103,10 @@ module DynamicImageElements
         unless inner
           width -= @padding[1] + @padding[3] if @padding
           width -= @margin[1] + @margin[3] if @margin
+          if @border && !@border.empty?
+            width -= @border[:left][0].to_i if @border[:left]
+            width -= @border[:right][0].to_i if @border[:right]
+          end
         end
         @options[:width] = width < 0 ? 0 : width
         recalculate_size!
@@ -109,6 +120,10 @@ module DynamicImageElements
         unless inner
           height -= @padding[0] + @padding[2] if @padding
           height -= @margin[0] + @margin[2] if @margin
+          if @border && !@border.empty?
+            height -= @border[:top][0].to_i if @border[:top]
+            height -= @border[:bottom][0].to_i if @border[:bottom]
+          end
         end
         @options[:height] = height < 0 ? 0 : height
         recalculate_size!
