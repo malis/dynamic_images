@@ -116,7 +116,20 @@ class DynamicImage < DynamicImageElements::BlockElement
   public
   # Gets left and bottom borders of drawing canvas
   def canvas_border
-    [@options[:width]+@margin[3]+@padding[3], @options[:height]+@margin[2]+@padding[2]]
+    x, y = [@options[:width], @options[:height]]
+    if @padding
+      x += @padding[3]
+      y += @padding[0]
+    end
+    if @margin
+      x += @margin[3]
+      y += @margin[0]
+    end
+    if @border && !@border.empty?
+      x += @border[:left][0].to_i if @border[:left]
+      y += @border[:top][0].to_i if @border[:top]
+    end
+    [x, y]
   end
 
   # Creates new DynamicImage from given source if it's supported. Use it in same way as DynamicImage.new.
