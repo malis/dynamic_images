@@ -29,7 +29,18 @@ module DynamicImageElements
 
     private
     def image
-      @image ||= Cairo::ImageSurface.from_png @source
+      unless @image
+        if @source.to_s =~ /\.png$/i
+          @image = Cairo::ImageSurface.from_png @source
+        else
+          if defined? Gdk
+            @image = Gdk::Pixbuf.new @source
+          else
+            raise "Unsupported source format of: #{@source}"
+          end
+        end
+      end
+      @image
     end
 
     def inner_size
@@ -52,7 +63,11 @@ module DynamicImageElements
       scale = [w.to_f/imgsize[0].to_f, h.to_f/imgsize[1].to_f]
       context.scale *scale
       context.save
-      context.set_source image, x/scale[0]-@crop[0], y/scale[1]-@crop[1]
+      if image.is_a? Cairo::Surface
+        context.set_source image, x/scale[0]-@crop[0], y/scale[1]-@crop[1]
+      else
+        context.set_source_pixbuf image, x/scale[0]-@crop[0], y/scale[1]-@crop[1]
+      end
       context.rectangle x/scale[0], y/scale[1], w/scale[0], h/scale[1]
       context.clip
       context.paint @options[:alpha]
