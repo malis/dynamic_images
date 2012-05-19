@@ -87,22 +87,23 @@ module DynamicImageElements
       #crop_to option
       suffixed = false
       if @options[:crop_to]
-        option = @options[:crop_to].is_a?(Array) ? @options[:crop_to] : @options[:crop_to].to_s.downcase.strip.split(/\s+/)
+        option = @options[:crop_to].is_a?(Array) ? @options[:crop_to].clone : @options[:crop_to].to_s.downcase.strip.split(/\s+/)
         stop_value = option.shift.to_i
-        lines_unit = option[1].to_sym == :lines || option[1].to_sym == :line
+        lines_unit = option[0].to_s == 'lines' || option[0].to_s == 'line'
         option.shift if lines_unit
         suffix = @options[:crop_suffix].to_s
         txt += suffix
         suffixed = true
         loop do
-          break if (lines_unit && pangoLayout.line_count <= stop_value) || txt == suffix
+          break if (lines_unit && pango_layout.line_count <= stop_value) || txt == suffix
           split = /\s+/ #words
-          split = /[\.!\?]+/ if option.first == "sentences"
-          split = // if option.first == "letters"
+          split = /[\.!\?]+/ if option.first.to_s == "sentences"
+          split = // if option.first.to_s == "letters"
           break if !lines_unit && txt.sub(/#{Regexp.escape(suffix)}$/, '').split(split).size <= stop_value
           txt = crop txt, suffix, option.first
           pango_layout.set_text txt
         end
+        puts txt
       end
       #to_fit option
       if @options[:to_fit]
@@ -111,7 +112,7 @@ module DynamicImageElements
         if width > 0 || height > 0
           suffix = @options[:crop_suffix].to_s
           txt += suffix unless suffixed
-          option = @options[:to_fit].is_a?(Array) ? @options[:to_fit] : @options[:to_fit].to_s.downcase.strip.split(/\s+/)
+          option = @options[:to_fit].is_a?(Array) ? @options[:to_fit].clone : @options[:to_fit].to_s.downcase.strip.split(/\s+/)
           methods = [] #it should look like this [:method1, :method2, ..., :methodN]
           method_args = [] #it should look like this [[arg1, arg2, ..., stop_value1], [arg1, ..., stop_value2], ..., [arg1, ...]]
           option.each do |opt|

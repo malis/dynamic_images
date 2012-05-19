@@ -81,10 +81,12 @@ module DynamicImageElements
           size_key = [:width, :height][dimension]
           table_key = [:cols, :rows][dimension]
           sizes = []
+          size_types = []
           @cells_map.each_with_index do |cells_row, row_index|
             cells_row.each_with_index do |element, col_index|
               index = [col_index, row_index][dimension]
               sizes[index] = {:max => 0, :sum => 0, :count => 0, :percentage => 0, :fixed => 0, :blow_up => false} unless sizes[index]
+              size_types[index] = :dynamic unless size_types[index]
               size_of_element = element[:obj].final_size[dimension] / element[table_key]
               sizes[index][:max] = size_of_element if size_of_element > sizes[index][:max]
               sizes[index][:sum] = sizes[index][:sum] + size_of_element
@@ -102,6 +104,7 @@ module DynamicImageElements
               sizes[index] = 0
             elsif s[:fixed] > 0
               sizes[index] = s[:fixed]
+              size_types[index] = :fixed
             elsif s[:percentage] > 0
               sizes[index] = size[dimension] * s[:percentage]
             elsif !@options[size_key]
@@ -135,9 +138,9 @@ module DynamicImageElements
               unless element[:is_duplicit]
                 s = sizes[index..index+element[table_key]-1].inject(:+).to_i
                 if dimension == 0
-                  element[:obj].set_width s, false
+                  element[:obj].set_width s, (size_types[index] == :fixed)
                 else
-                  element[:obj].set_height s, false
+                  element[:obj].set_height s, (size_types[index] == :fixed)
                 end
               end
             end
