@@ -103,7 +103,6 @@ module DynamicImageElements
           txt = crop txt, suffix, option.first
           pango_layout.set_text txt
         end
-        puts txt
       end
       #to_fit option
       if @options[:to_fit]

@@ -161,7 +161,7 @@ module DynamicImageSources
         if @args.size == 6
           pattern = Cairo::RadialPattern.new @args[0]+x, @args[1]+y, @args[2], @args[3]+x, @args[4]+y, @args[5]
         else
-          x, y = [(x+w)/2, (y+h)/2]
+          x, y = [x+w/2, y+h/2]
           radius = @args[0].class == Float ? Math.sqrt(w**2 + h**2)/2 * @args[0] : @args[0]
           dist1 = @args[2].class == Float ? radius * @args[2] : @args[2]
           dist2 = @args[4].class == Float ? radius * @args[4] : @args[4]
