@@ -178,7 +178,7 @@ class DynamicImage < DynamicImageElements::BlockElement
       w, h = @options[:width], @options[:height]
       pixmap = Gdk::Pixmap.new nil, w, h, 24
       context = pixmap.create_cairo_context
-      context.set_source surface, 0, 0
+      context.set_source @context.target, 0, 0
       context.paint
       #pixbuf = Gdk::Pixbuf.new gtk.gdk.COLORSPACE_RGB, True, 8, w, h
       pixbuf = Gdk::Pixbuf.from_drawable Gdk::Colormap.system, pixmap, 0, 0, w, h
