@@ -209,9 +209,11 @@ module DynamicImageElements
     # You can also call it alone to make next cells in new row.
     def row(&block) # :yields: table_element
       process self, &block if block
-      @map_pos = [0, @map_pos[1] + 1]
-      @cells_map[@map_pos[1]] ||= []
-      move_to_next_pos
+      if @map_pos[0] > 0
+        @map_pos = [0, @map_pos[1] + 1]
+        @cells_map[@map_pos[1]] ||= []
+        move_to_next_pos
+      end
       self
     end
   end

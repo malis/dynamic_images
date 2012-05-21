@@ -17,7 +17,7 @@ module DynamicImageSources
 
     # Gives +Array+ of all known named colors. See http://cairo.rubyforge.org/doc/en/cairo-color.html#label-5
     def self.named_colors
-      @@named_colors ||= Cairo::Color.constants.sort - %w{ RGB CMYK HSV X11 Base HEX_RE }
+      @@named_colors ||= Cairo::Color.constants.sort - %w{ RGB CMYK HSV X11 Base HEX_RE } - %w{ RGB CMYK HSV X11 Base HEX_RE }.map(&:to_sym)
     end
 
     # Returns source object or nil if it can't parse it.
@@ -55,22 +55,29 @@ module DynamicImageSources
         source.shift
         hex.reverse.each {|h| source.unshift h.to_i(16) }
       end
-      if source[0].to_s =~ /^\d+\.\d+$/
+      if is_all_nums(source, 0..2)
         treat_numbers source
         new Cairo::Color::RGB.new(*source[0..2]), source[3]
-      elsif source[0] == "cmyk"
+      elsif source[0] == "cmyk" && is_all_nums(source, 1..4)
         treat_numbers source
         new Cairo::Color::CMYK.new(*source[1..4]).to_rgb, source[5]
-      elsif source[0] == "hsv"
+      elsif source[0] == "hsv" && is_all_nums(source, 1..3)
         treat_numbers source
         new Cairo::Color::HSV.new(*source[1..3]).to_rgb, source[4]
-      elsif named_colors.include? source[0].upcase
+      elsif named_colors.include? source[0].to_s.upcase
         treat_numbers source
-        new Cairo::Color.parse(source[0].upcase), source[1]
+        new Cairo::Color.parse(source[0].to_s.upcase), source[1]
       end
     end
 
     private
+    def self.is_all_nums(arr, int)
+      int.to_a.each do |index|
+        return false unless arr[index] && arr[index].to_s =~ /^\d+(\.\d+)?$/
+      end
+      return true
+    end
+
     def self.treat_numbers(source)
       source.each_with_index do |value, index|
         if source[index].to_s =~ /^\d+$/

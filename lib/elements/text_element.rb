@@ -71,37 +71,36 @@ module DynamicImageElements
 
     private
     # Tolerance of space to drawing because <tt>Pango::Layout</tt> doesn't fix exactly to given size
-    SIZE_TOLERANCE = 4
+    SIZE_TOLERANCE = 0
     def setup_pango_layout(pango_layout)
       pango_layout.set_width((@parent.width-@margin[1]-@margin[3]+SIZE_TOLERANCE)*Pango::SCALE) if @parent.width
-      pango_layout.set_font_description Pango::FontDescription.new(@options[:font]) if @options[:font]
+      pango_layout.set_font_description Pango::FontDescription.new(@options[:font].to_s) if @options[:font]
       pango_layout.set_width @options[:width]*Pango::SCALE if @options[:width]
       pango_layout.set_alignment({:left => Pango::ALIGN_LEFT, :center => Pango::ALIGN_CENTER, :right => Pango::ALIGN_RIGHT}[@options[:align].to_sym]) if @options[:align]
-      pango_layout.set_indent @options[:indent]*Pango::SCALE if @options[:indent]
-      pango_layout.set_spacing @options[:spacing]*Pango::SCALE if @options[:spacing]
+      pango_layout.set_indent @options[:indent].to_i*Pango::SCALE if @options[:indent] && (@options[:indent].class == Fixnum || @options[:indent].class == Float || @options[:indent].class == String)
+      pango_layout.set_spacing @options[:spacing].to_i*Pango::SCALE if @options[:spacing] && (@options[:spacing].class == Fixnum || @options[:spacing].class == Float || @options[:spacing].class == String)
       pango_layout.set_justify !!@options[:justify] if @options[:justify]
       pango_layout.set_auto_dir !!@options[:auto_dir] if @options[:auto_dir]
       attrs, txt = Pango.parse_markup @content.to_s
       pango_layout.set_attributes attrs
       pango_layout.set_text txt
       #crop_to option
-      suffixed = false
       if @options[:crop_to]
-        option = @options[:crop_to].is_a?(Array) ? @options[:crop_to].clone : @options[:crop_to].to_s.downcase.strip.split(/\s+/)
+        option = @options[:crop_to].is_a?(Array) ? @options[:crop_to].clone.flatten : @options[:crop_to].to_s.downcase.strip.split(/\s+/)
         stop_value = option.shift.to_i
         lines_unit = option[0].to_s == 'lines' || option[0].to_s == 'line'
         option.shift if lines_unit
         suffix = @options[:crop_suffix].to_s
-        txt += suffix
-        suffixed = true
+        split = /\s+/ #words
+        split = /[\.!\?]+/ if option.first.to_s == "sentences"
+        split = // if option.first.to_s == "letters"
+        count = txt.strip.split(split).size
         loop do
           break if (lines_unit && pango_layout.line_count <= stop_value) || txt == suffix
-          split = /\s+/ #words
-          split = /[\.!\?]+/ if option.first.to_s == "sentences"
-          split = // if option.first.to_s == "letters"
-          break if !lines_unit && txt.sub(/#{Regexp.escape(suffix)}$/, '').split(split).size <= stop_value
-          txt = crop txt, suffix, option.first
-          pango_layout.set_text txt
+          break if !lines_unit && count <= stop_value
+          txt = crop txt, option.first
+          count -= 1
+          pango_layout.set_text txt+suffix
         end
       end
       #to_fit option
@@ -110,8 +109,7 @@ module DynamicImageElements
         height = (@parent.height ? @parent.height-@margin[0]-@margin[2] : nil).to_i
         if width > 0 || height > 0
           suffix = @options[:crop_suffix].to_s
-          txt += suffix unless suffixed
-          option = @options[:to_fit].is_a?(Array) ? @options[:to_fit].clone : @options[:to_fit].to_s.downcase.strip.split(/\s+/)
+          option = @options[:to_fit].is_a?(Array) ? @options[:to_fit].clone.flatten : @options[:to_fit].to_s.downcase.strip.split(/\s+/)
           methods = [] #it should look like this [:method1, :method2, ..., :methodN]
           method_args = [] #it should look like this [[arg1, arg2, ..., stop_value1], [arg1, ..., stop_value2], ..., [arg1, ...]]
           option.each do |opt|
@@ -128,9 +126,12 @@ module DynamicImageElements
               split = /\s+/ #words
               split = /[\.!\?]+/ if method_args.first.first == "sentences"
               split = // if method_args.first.first == "letters"
-              while (width > 0 && pango_layout.size[0]/Pango::SCALE > width+SIZE_TOLERANCE/2 || height > 0 && pango_layout.size[1]/Pango::SCALE > height+SIZE_TOLERANCE/2) && txt.sub(/#{Regexp.escape(suffix)}$/, '').split(split).size > method_args.first.last.to_s.to_i
-                txt = crop txt, suffix, method_args.first.first
-                pango_layout.set_text txt
+              count = txt.strip.split(split).size
+              while (width > 0 && pango_layout.size[0]/Pango::SCALE > width+SIZE_TOLERANCE || height > 0 && pango_layout.size[1]/Pango::SCALE > height+SIZE_TOLERANCE) && count > method_args.first.last.to_s.to_i
+                puts pango_layout.size.map{|i| i/Pango::SCALE}.inspect
+                txt = crop txt, method_args.first.first
+                count -= 1
+                pango_layout.set_text txt+suffix
               end
             when :resize
               pango_layout.set_font_description Pango::FontDescription.new unless pango_layout.font_description
@@ -148,14 +149,14 @@ module DynamicImageElements
       pango_layout
     end
 
-    def crop(txt, suffix, method)
+    def crop(txt, method)
       case method.to_s
       when 'sentences'
-        txt.sub(/([^\.!\?]+#{Regexp.escape(suffix)}|[^\.!\?]+[\.!\?]+#{Regexp.escape(suffix)})$/, '') + suffix
+        txt.sub(/([^\.!\?]+|[^\.!\?]+[\.!\?]+)$/, '')
       when 'letters'
-        txt.sub(/[\S\s]#{Regexp.escape(suffix)}$/, '') + suffix
+        txt.sub(/[\S\s]$/, '')
       else #words
-        txt.sub(/\s*\S+\s*#{Regexp.escape(suffix)}$/, '') + suffix
+        txt.sub(/\s*\S+\s*$/, '')
       end
     end
 

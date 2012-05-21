@@ -177,11 +177,11 @@ module DynamicImageElements
 
     def add_element(e, options)
       @size = nil
-      x = (options[:position].to_sym == :absolute ? options[:x] : nil) || 0
+      x = (options[:position].to_s.to_sym == :absolute ? options[:x] : nil) || 0
       last_element = @last_element
-      y = (options[:position].to_sym == :absolute ? options[:y] : nil) || (last_element ? lambda{(last_element[:y].class == Proc ? last_element[:y].call : last_element[:y]) + (last_element[:obj].is_drawed? ? 0 : last_element[:obj].final_size[1])} : 0)
+      y = (options[:position].to_s.to_sym == :absolute ? options[:y] : nil) || (last_element ? lambda{(last_element[:y].class == Proc ? last_element[:y].call : last_element[:y]) + (last_element[:obj].is_drawed? ? 0 : last_element[:obj].final_size[1])} : 0)
       z = options[:z] || 0
-      element = {:x => x, :y => y, :z => z, :position => options[:position].to_sym, :width => options[:width], :height => options[:height], :obj => e}
+      element = {:x => x, :y => y, :z => z, :position => options[:position].to_s.to_sym, :width => options[:width], :height => options[:height], :obj => e}
       @last_element = element unless element[:position] == :absolute
       e.set_width(width ? (width * options[:width]).to_i : nil, false) if options[:width].class == Float
       e.set_height(height ? (height * options[:height]).to_i : nil, false) if options[:height].class == Float

@@ -183,7 +183,7 @@ module DynamicImageSources
 
     private
     def add_stop(offset, color_source)
-       @stops << [offset, color_source.red, color_source.green, color_source.blue, color_source.alpha]
+      @stops << [offset, color_source.red, color_source.green, color_source.blue, color_source.alpha]
     end
 
     def degree_dist(deg, dist, x, y)

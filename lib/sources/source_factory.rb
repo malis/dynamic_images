@@ -17,7 +17,7 @@ module DynamicImageSources
     def self.parse(source)
       raise Exception.new "not implemented in #{self}, but should be" unless self == SourceFactory
       return source if source.is_a? SourceFactory
-      source = source.is_a?(Array) ? source.map(&:to_s).map(&:downcase) : source.to_s.downcase.split(/\s+/)
+      source = source.is_a?(Array) ? source.flatten.map(&:to_s).map(&:downcase) : source.to_s.downcase.split(/\s+/)
       @@factories.each do |factory|
         obj = factory.parse source
         return obj if obj

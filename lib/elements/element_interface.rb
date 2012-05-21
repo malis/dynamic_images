@@ -32,8 +32,8 @@ module DynamicImageElements
         y += @options[:y].to_i
       end
       if @border && !@border.empty?
-        x += @border[:left][0].to_i if @border[:left]
-        y += @border[:top][0].to_i if @border[:top]
+        x += @border[:left][0] if @border[:left]
+        y += @border[:top][0] if @border[:top]
       end
       unless endless && @parent
         draw x, y, endless
@@ -87,10 +87,10 @@ module DynamicImageElements
         h += @margin[0] + @margin[2]
       end
       if @border && !@border.empty?
-        w += @border[:left][0].to_i if @border[:left]
-        w += @border[:right][0].to_i if @border[:right]
-        h += @border[:top][0].to_i if @border[:top]
-        h += @border[:bottom][0].to_i if @border[:bottom]
+        w += @border[:left][0] if @border[:left]
+        w += @border[:right][0] if @border[:right]
+        h += @border[:top][0] if @border[:top]
+        h += @border[:bottom][0] if @border[:bottom]
       end
       [w, h]
     end
@@ -104,8 +104,8 @@ module DynamicImageElements
           width -= @padding[1] + @padding[3] if @padding
           width -= @margin[1] + @margin[3] if @margin
           if @border && !@border.empty?
-            width -= @border[:left][0].to_i if @border[:left]
-            width -= @border[:right][0].to_i if @border[:right]
+            width -= @border[:left][0] if @border[:left]
+            width -= @border[:right][0] if @border[:right]
           end
         end
         @options[:width] = width < 0 ? 0 : width
@@ -121,8 +121,8 @@ module DynamicImageElements
           height -= @padding[0] + @padding[2] if @padding
           height -= @margin[0] + @margin[2] if @margin
           if @border && !@border.empty?
-            height -= @border[:top][0].to_i if @border[:top]
-            height -= @border[:bottom][0].to_i if @border[:bottom]
+            height -= @border[:top][0] if @border[:top]
+            height -= @border[:bottom][0] if @border[:bottom]
           end
         end
         @options[:height] = height < 0 ? 0 : height
@@ -153,7 +153,7 @@ module DynamicImageElements
       if metakey == :margin || metakey == :padding
         value = [0, 0, 0, 0]
         if @options[metakey].is_a? Array
-          value = (@options[metakey].map(&:to_i)*4)[0..3]
+          value = (@options[metakey].map{|v| v.class == Fixnum || v.class == Float || v.class == String ? v.to_i : 0}*4)[0..3]
         else
           value = (@options[metakey].to_s.scan(/\-?\d+/).flatten.map(&:to_i)*4)[0..3] if @options[metakey] && @options[metakey].to_s =~ /\d/
         end
@@ -168,8 +168,8 @@ module DynamicImageElements
         [:top, :right, :bottom, :left].each do |side|
           @options["#{metakey}_#{side}".to_sym] = @options[:border] unless @options["#{metakey}_#{side}".to_sym]
           next unless @options["#{metakey}_#{side}".to_sym]
-          border = @options["#{metakey}_#{side}".to_sym].is_a?(Array) ? @options["#{metakey}_#{side}".to_sym] : @options["#{metakey}_#{side}".to_sym].to_s.split(/\s+/)
-          @border[side] = border[0..1] + [DynamicImageSources::SourceFactory.parse(border[2..-1])]
+          border = @options["#{metakey}_#{side}".to_sym].is_a?(Array) ? @options["#{metakey}_#{side}".to_sym].flatten : @options["#{metakey}_#{side}".to_sym].to_s.split(/\s+/)
+          @border[side] = [border[0].to_i, border[1], DynamicImageSources::SourceFactory.parse(border[2..-1])] if border[0].to_i > 0
           @border_sides_order = border_sides_order
         end
       end
@@ -196,7 +196,11 @@ module DynamicImageElements
       end
       #check values that must be numeric
       [:x, :y, :z, :cols, :colspan, :rowspan].each do |key|
-        options[key] = options[key].to_i if options[key]
+        if options[key] && (options[key].class == Fixnum || options[key].class == Float || options[key].class == String)
+          options[key] = options[key].to_i
+        else
+          options[key] = nil
+        end
       end
       #check values that must be numeric, but can be in percentage
       [:width, :height, :alpha].each do |key|
@@ -209,6 +213,16 @@ module DynamicImageElements
         else
           options[key] = options[key].to_i
         end
+      end
+      #check values that must be positive numeric
+      [:cols, :colspan, :rowspan].each do |key|
+        options[key] = nil if options[key] && options[key] <= 0
+      end
+      #check value that are true/false
+      [:auto_dir, :justify].each do |key|
+        next unless options[key]
+        next if options[key].class == TrueClass || options[key].class == FalseClass
+        options[key] = !(options[key].to_s == "" || options[key].to_s == "false" || options[key].to_s == "0")
       end
       options[:width] = nil if options[:width] && options[:width] <= 0
       options[:height] = nil if options[:height] && options[:height] <= 0
@@ -253,10 +267,10 @@ module DynamicImageElements
       return unless @border_sides_order
       original_source = context.source
       lines_width = {
-        :top => (@border[:top][0].to_i rescue 0),
-        :right => (@border[:right][0].to_i rescue 0),
-        :bottom => (@border[:bottom][0].to_i rescue 0),
-        :left => (@border[:left][0].to_i rescue 0)
+        :top => (@border[:top][0] rescue 0),
+        :right => (@border[:right][0] rescue 0),
+        :bottom => (@border[:bottom][0] rescue 0),
+        :left => (@border[:left][0] rescue 0)
       }
       @border_sides_order.each do |key|
         next unless @border && @border[key]
