@@ -9,8 +9,15 @@ Library is using these libraries:
 * pango
 * rexml
 
+== How to install & use
 
+Download this repository and place it into your folder.
 
+Require init.rb file from library's folder.
+
+Optionaly you can load gtk2 libraty too. It's supporting another image formats.
+
+For more information how to use or about elements read documentation.
 
 
 
