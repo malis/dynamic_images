@@ -35,7 +35,7 @@ To use within Rails application just download this library as plugin.
 
   rails plugin install git://github.com/malis/dynamic_images.git
 
-You need to add <tt>cairo</tt> and <tt>pango</tt> gems to your Gemfile of environment.rb file.
+You need to add <tt>cairo</tt> and <tt>pango</tt> gems to your Gemfile or environment.rb file.
 
 Then just update your controller like this:
 
@@ -47,7 +47,7 @@ Then just update your controller like this:
     end
   end
 
-Do not forgot to add mime types for user image formats to your environment file.
+Do not forgot to add mime types for used image formats to your environment file.
 
   Mime::Type.register "image/png", :png
 
