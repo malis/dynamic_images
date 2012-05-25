@@ -153,11 +153,11 @@ module DynamicImageElements
       if metakey == :margin || metakey == :padding
         value = [0, 0, 0, 0]
         if @options[metakey].is_a? Array
-          value = (@options[metakey].map{|v| v.class == Fixnum || v.class == Float || v.class == String ? v.to_i : 0}*4)[0..3]
+          value = (@options[metakey].flatten.map{|v| v.class == Fixnum || v.class == Float || v.class == String ? v.to_i : 0}*4)[0..3]
         else
           value = (@options[metakey].to_s.scan(/\-?\d+/).flatten.map(&:to_i)*4)[0..3] if @options[metakey] && @options[metakey].to_s =~ /\d/
         end
-        [:top, :right, :bottom, :left].each_with_index {|side, index| value[index] = @options["#{metakey}_#{side}".to_sym].to_i if @options["#{metakey}_#{side}".to_sym] }
+        [:top, :right, :bottom, :left].each_with_index {|side, index| value[index] = @options["#{metakey}_#{side}".to_sym].to_i if @options["#{metakey}_#{side}".to_sym].to_s =~ /\-?\d+(.\d+)?/ }
         instance_variable_set "@#{metakey}", value
       elsif metakey == :border
         border_sides_order = [:top, :right, :bottom, :left]
@@ -169,7 +169,10 @@ module DynamicImageElements
           @options["#{metakey}_#{side}".to_sym] = @options[:border] unless @options["#{metakey}_#{side}".to_sym]
           next unless @options["#{metakey}_#{side}".to_sym]
           border = @options["#{metakey}_#{side}".to_sym].is_a?(Array) ? @options["#{metakey}_#{side}".to_sym].flatten : @options["#{metakey}_#{side}".to_sym].to_s.split(/\s+/)
-          @border[side] = [border[0].to_i, border[1], DynamicImageSources::SourceFactory.parse(border[2..-1])] if border[0].to_i > 0
+          if border[0].to_i > 0
+            source = DynamicImageSources::SourceFactory.parse(border[2..-1])
+            @border[side] = [border[0].to_i, border[1], source] if source
+          end
           @border_sides_order = border_sides_order
         end
       end
@@ -206,12 +209,15 @@ module DynamicImageElements
       [:width, :height, :alpha].each do |key|
         next unless options[key]
         next if options[key].class == Float
-        if options[key] =~ /(\d+)%$/
+        next if options[key].class == Fixnum && options[key] > 0
+        if options[key] =~ /\A\s*(\d+)%\s*\Z$/
           options[key] = $1.to_f/100.0
-        elsif options[key] =~ /(\d+\.\d+)$/
+        elsif options[key] =~ /\A\s*(\d+\.\d+)\s*\Z$/
           options[key] = $1.to_f
+        elsif options[key] =~ /\A\s*(\d+)\s*\Z/
+          options[key] = $1.to_i
         else
-          options[key] = options[key].to_i
+          options[key] = nil
         end
       end
       #check values that must be positive numeric

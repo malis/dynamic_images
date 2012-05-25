@@ -17,7 +17,7 @@ module DynamicImageSources
 
     # Gives +Array+ of all known named colors. See http://cairo.rubyforge.org/doc/en/cairo-color.html#label-5
     def self.named_colors
-      @@named_colors ||= Cairo::Color.constants.sort - %w{ RGB CMYK HSV X11 Base HEX_RE } - %w{ RGB CMYK HSV X11 Base HEX_RE }.map(&:to_sym)
+      @@named_colors ||= (Cairo::Color.constants.sort - %w{ RGB CMYK HSV X11 Base HEX_RE } - %w{ RGB CMYK HSV X11 Base HEX_RE }.map(&:to_sym)).map(&:to_s)
     end
 
     # Returns source object or nil if it can't parse it.

@@ -113,7 +113,7 @@ module DynamicImageElements
           methods = [] #it should look like this [:method1, :method2, ..., :methodN]
           method_args = [] #it should look like this [[arg1, arg2, ..., stop_value1], [arg1, ..., stop_value2], ..., [arg1, ...]]
           option.each do |opt|
-            if [:crop, :resize].include? opt.to_sym
+            if [:crop, :resize].include? opt.to_s.to_sym
               methods << opt.to_sym
               method_args << []
             else
@@ -128,7 +128,6 @@ module DynamicImageElements
               split = // if method_args.first.first == "letters"
               count = txt.strip.split(split).size
               while (width > 0 && pango_layout.size[0]/Pango::SCALE > width+SIZE_TOLERANCE || height > 0 && pango_layout.size[1]/Pango::SCALE > height+SIZE_TOLERANCE) && count > method_args.first.last.to_s.to_i
-                puts pango_layout.size.map{|i| i/Pango::SCALE}.inspect
                 txt = crop txt, method_args.first.first
                 count -= 1
                 pango_layout.set_text txt+suffix

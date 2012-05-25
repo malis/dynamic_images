@@ -24,7 +24,11 @@ module DynamicImageElements
       @options = options
       @parent = parent
       use_options :margin
-      @crop = (@options[:crop].is_a?(Array) ? @options[:crop].flatten : @options[:crop].to_s.split(/\s+/)).map(&:to_i) + [0, 0, 0, 0]
+      if @options[:crop].is_a? Array
+        @crop = (@options[:crop].flatten.map{|v| v.class == Fixnum || v.class == Float || v.class == String ? v.to_i : 0} + [0, 0, 0, 0])[0..3]
+      else
+        @crop = (@options[:crop].to_s.scan(/\-?\d+/).flatten.map(&:to_i) + [0, 0, 0, 0])[0..3]
+      end
     end
 
     private
