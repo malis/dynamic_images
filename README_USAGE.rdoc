@@ -27,4 +27,41 @@ These examples are considered as same.
 
 == Image formats
 In base you can save and load all as PNG images. You can enable more formats by loading gtk library. DynamicImage will automatically detect it's loaded.
+
   require 'gtk2'
+
+== Using with Rails
+To use within Rails application just download this library as plugin.
+
+  rails plugin install git://github.com/malis/dynamic_images.git
+
+You need to add <tt>cairo</tt> and <tt>pango</tt> gems to your Gemfile of environment.rb file.
+
+Then just update your controller like this:
+
+  def show
+    @article = Article.find(params[:id])
+    respond_to do |format|
+      format.html
+      format.png { render_image } #or render_image("show.jpg"), find more in doc
+    end
+  end
+
+Do not forgot to add mime types for user image formats to your environment file.
+
+  Mime::Type.register "image/png", :png
+
+Create view articles/show.png.xml.erb like this:
+
+  <?xml version="1.0" encoding="UTF-8" ?>
+  <!DOCTYPE dynamic_images PUBLIC "-//malis//dynamic_images//EN" "https://raw.github.com/malis/dynamic_images/master/lib/parsers/xml.dtd">
+  <dynamic_images>
+    <dynamic_image width="500" align="center" background="blue 0.5">
+      <text font="Arial bold 20"><%= @article.title %></text>
+      <text indent="30"><%= @article.text %></text>
+    </dynamic_image>
+  </dynamic_images>
+
+That's all!
+
+Library is tested under Rails 2.3.11 (ruby 1.8.7) and 3.1.1 (ruby 1.9.2)
