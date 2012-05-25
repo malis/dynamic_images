@@ -143,7 +143,7 @@ class DynamicImage < DynamicImageElements::BlockElement
     DynamicImage.new options, &block
   end
 
-  # Saves image into file(TODO: or given IO object). Image will be drawed only if no file is given. It's usable when you drawing into prepared Cairo object.
+  # Saves image into file or given IO object (you have to speficify :format option like file extension, f.e. <tt>png</tt>). Image will be drawed only if no file is given. It's usable when you drawing into prepared Cairo object.
   #
   # Block can be given to draw into context directly.
   #
@@ -170,8 +170,9 @@ class DynamicImage < DynamicImageElements::BlockElement
 
   private
   def write_to(file, options)
-    ext = file.scan(/\.([a-z]+)$/i).flatten.first.downcase
-    if ext == "png"
+    ext = options[:format]
+    ext ||= file.scan(/\.([a-z]+)$/i).flatten.first.downcase
+    if ext.to_s == "png"
       context.target.write_to_png file
     else
       raise "Unsupported file type #{ext}" unless defined? Gdk
@@ -183,7 +184,7 @@ class DynamicImage < DynamicImageElements::BlockElement
       #pixbuf = Gdk::Pixbuf.new gtk.gdk.COLORSPACE_RGB, True, 8, w, h
       pixbuf = Gdk::Pixbuf.from_drawable Gdk::Colormap.system, pixmap, 0, 0, w, h
       begin
-        format = Gdk::Pixbuf.formats.select{|f| f.extensions.include? ext}.first.name
+        format = Gdk::Pixbuf.formats.select{|f| f.extensions.include? ext.to_s}.first.name
       rescue
         raise "Unsupported file type #{ext}"
       end
@@ -194,10 +195,9 @@ class DynamicImage < DynamicImageElements::BlockElement
   public
   # Saves image content into more images if content is bigger than given image size.
   # Image is cut between elements in first level of elements hierarchy. In case of table it's cut between rows of table.
-  # You can force duplicating elements by passing :TODO option to element. Duplicating of element is started by first rendering of it.
   #
   # Method accepts limit of pages to be rendered. If no number is given or 0 is passed it's not limited.
-  # Give a block returning filename (TODO: or IO object) to saving in it. Block provides index of page which is currently rendered. Index starting at 0.
+  # Give a block returning filename or given IO object (you have to speficify :format option like file extension, f.e. <tt>png</tt>) to saving in it. Block provides index of page which is currently rendered. Index starting at 0.
   #
   # PNG format is always supported.
   #

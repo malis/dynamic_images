@@ -45,11 +45,14 @@ module DynamicImageParsers
   #
   class XmlParser
     # Accepts filename or +String+ containing XML document and processes it with dynamic_images library.
-    def initialize(filename_or_xml)
+    def initialize(filename_or_xml, render_only_first_to = nil, options = {})
+      @render_only_first_to = render_only_first_to
+      @options = options
       filename_or_xml = File.read(filename_or_xml) if File.exists? filename_or_xml
       doc = REXML::Document.new(filename_or_xml)
       doc.elements.first.each_element do |image|
         dynamic_image image
+        return if @render_only_first_to
       end
     end
 
@@ -60,12 +63,18 @@ module DynamicImageParsers
         image.each_element do |xml_element|
           in_block_element xml_element, dimg
         end
-        save_options = options[:quality] ? {:quality => options[:quality]} : {}
-        if options[:save]
-          dimg.save! options[:save], save_options
-        elsif options[:save_endless]
-          dimg.save_endless! options[:save_endless_limit].to_i do |index|
-            options[:save_endless].gsub("%{index}", index)
+        if @render_only_first_to
+          save_options = @options[:quality] ? {:quality => @options[:quality]} : {}
+          save_options[:format] = @options[:format]
+          dimg.save! @render_only_first_to, save_options
+        else
+          save_options = options[:quality] ? {:quality => options[:quality]} : {}
+          if options[:save]
+            dimg.save! options[:save], save_options
+          elsif options[:save_endless]
+            dimg.save_endless! options[:save_endless_limit].to_i do |index|
+              options[:save_endless].gsub("%{index}", index)
+            end
           end
         end
       end
