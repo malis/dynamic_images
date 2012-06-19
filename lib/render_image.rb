@@ -10,6 +10,20 @@ module RenderImage
   # [:quality]
   #   When saving into JPEG format you can pass :quality into options. Valid values are in 0 - 100.
   #
+  # === Example
+  # File show.png.xml.erb should looks like this:
+  #
+  #  <?xml version="1.0" encoding="UTF-8" ?>
+  #  <!DOCTYPE dynamic_images PUBLIC "-//malis//dynamic_images//EN" "https://raw.github.com/malis/dynamic_images/master/lib/parsers/xml.dtd">
+  #  <dynamic_images>
+  #    <dynamic_image width="500" align="center" background="blue 0.5">
+  #      <text font="Arial bold 20"><%= @article.title %></text>
+  #      <text indent="30"><%= @article.text %></text>
+  #    </dynamic_image>
+  #  </dynamic_images>
+  #
+  # Attributes save, save_endless and quality will be omitted. You can pass quality in options +Hash+.
+  #
   def render_image(template = nil, options = {}, assigns = {})
     template ||= "#{action_name}.png"
     template += ".xml.erb" if template.class == String && template !~ /\.xml\.erb\Z/i
